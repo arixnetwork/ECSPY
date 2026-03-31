@@ -172,9 +172,9 @@ const res = await fetch('https://api.anthropic.com/v1/messages', {
 ---
 
 ## 📞 Support
-- Website: https://ecspy.net
-- Email: support@ecspy.net
-- Twitter: @ecspy_net
+- Website: https://rabbyitfirm.com
+- Email: support@rabbyitfirm.com
+- Twitter: @rabbyitfirm
 
 ---
 
