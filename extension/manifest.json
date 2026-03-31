@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "ECSPY — Shopify & WordPress Spy Tool",
+  "short_name": "ECSPY",
+  "version": "2.4.1",
+  "description": "Spy on any Shopify or WooCommerce store instantly. Reveals revenue, traffic, apps, themes, products, Whois and more. The ultimate dropship intelligence tool.",
+  "author": "ECSPY Inc.",
+  "homepage_url": "https://ecspy.net",
+
+  "icons": {
+    "16":  "icons/icon16.png",
+    "32":  "icons/icon32.png",
+    "48":  "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16":  "icons/icon16.png",
+      "32":  "icons/icon32.png",
+      "48":  "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "ECSPY — Store Intelligence"
+  },
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*.myshopify.com/*", "*://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "*://*.myshopify.com/*",
+    "*://*/*"
+  ],
+
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*", "popup.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+
+  "minimum_chrome_version": "102"
+}

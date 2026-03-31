@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECSPY v2 — Full Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#07080d;--s1:#0d0f17;--s2:#111420;--s3:#171b28;--s4:#1d2233;--s5:#242840;
+--b1:#ffffff0d;--b2:#ffffff18;--b3:#ffffff28;--b4:#ffffff38;
+--t1:#f0f2ff;--t2:#8892b0;--t3:#4a5270;
+--or:#f07820;--or2:#ff9540;--og:rgba(240,120,32,.13);--ob:rgba(240,120,32,.22);
+--gr:#22d3a0;--bl:#3d8bff;--pu:#9d6fff;--re:#ff5566;--ye:#f5c842;
+--r8:8px;--r12:12px;--r16:16px;--r20:20px;
+}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-size:13px;line-height:1.5}
+button{cursor:pointer;font-family:'Inter',sans-serif;border:none;outline:none}
+input,select,textarea{font-family:'Inter',sans-serif;outline:none}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b3);border-radius:4px}
+
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;min-width:220px;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;transition:.25s}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:54px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 18px;gap:10px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:18px;background:var(--bg)}
+.page{display:none}.page.active{display:block}
+
+/* SIDEBAR */
+.sb-logo{padding:14px 14px 12px;display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--b1)}
+.sb-logo-box{width:32px;height:32px;background:var(--or);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-logo-box svg{width:16px;height:16px;fill:#fff}
+.sb-logo-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
+.sb-logo-ver{font-size:9px;color:var(--or);font-weight:700;letter-spacing:.6px}
+.sb-nav{flex:1;overflow-y:auto;padding:6px}
+.sb-sec{font-size:9px;font-weight:700;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;padding:10px 8px 3px}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--r8);cursor:pointer;color:var(--t2);font-size:12px;font-weight:500;transition:.12s;margin-bottom:1px;background:none;width:100%;text-align:left;border:none;position:relative}
+.ni:hover{background:var(--b1);color:var(--t1)}
+.ni.active{background:var(--og);color:var(--or);border:1px solid var(--ob)}
+.ni svg{width:13px;height:13px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8}
+.nb{margin-left:auto;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;color:#fff}
+.nb-or{background:var(--or)}.nb-gr{background:var(--gr)}.nb-re{background:var(--re)}.nb-bl{background:var(--bl)}
+.sb-foot{border-top:1px solid var(--b1);padding:10px}
+.credit-box{background:var(--og);border:1px solid var(--ob);border-radius:var(--r12);padding:10px 12px;margin-bottom:8px}
+.credit-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.credit-title{font-size:11px;font-weight:700;color:var(--or);display:flex;align-items:center;gap:5px}
+.credit-count{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--or)}
+.credit-bar{height:4px;background:rgba(240,120,32,.2);border-radius:2px;overflow:hidden;margin-bottom:5px}
+.credit-fill{height:100%;background:var(--or);border-radius:2px;transition:width .4s}
+.credit-sub{font-size:10px;color:var(--t3)}
+.sb-user{display:flex;align-items:center;gap:8px;padding:4px 0}
+.sb-av{width:26px;height:26px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--or);border:1px solid var(--ob);flex-shrink:0}
+.sb-uname{font-size:11px;font-weight:600;color:var(--t1)}
+.sb-uplan{font-size:9px;color:var(--or);font-weight:700}
+
+/* TOPBAR */
+.pg-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--t1)}
+.search-bar{display:flex;align-items:center;gap:7px;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r8);padding:5px 11px;width:240px}
+.search-bar:focus-within{border-color:var(--ob)}
+.search-bar input{background:none;border:none;color:var(--t1);font-size:12px;width:100%}
+.search-bar input::placeholder{color:var(--t3)}
+.search-bar svg{width:12px;height:12px;stroke:var(--t3);fill:none;stroke-width:2;flex-shrink:0}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-credit{display:flex;align-items:center;gap:6px;background:var(--og);border:1px solid var(--ob);border-radius:20px;padding:4px 12px;cursor:pointer;transition:.15s}
+.tb-credit:hover{background:rgba(240,120,32,.2)}
+.tb-credit svg{width:12px;height:12px;stroke:var(--or);fill:none;stroke-width:2}
+.tb-credit-text{font-size:11px;font-weight:700;color:var(--or)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r8);font-size:12px;font-weight:600;transition:.15s;border:none;cursor:pointer;font-family:'Inter',sans-serif}
+.btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5}
+.btn-primary{background:var(--or);color:#fff}
+.btn-primary:hover{background:var(--or2)}
+.btn-ghost{background:var(--s3);color:var(--t2);border:1px solid var(--b2)}
+.btn-ghost:hover{color:var(--t1);border-color:var(--b3)}
+.btn-sm{padding:4px 9px;font-size:11px}
+.btn-danger{background:rgba(255,85,102,.12);color:var(--re);border:1px solid rgba(255,85,102,.2)}
+.notif-btn{width:30px;height:30px;border-radius:var(--r8);background:var(--s2);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.notif-btn svg{width:13px;height:13px;stroke:var(--t2);fill:none;stroke-width:2}
+.notif-dot{position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--re);border:1.5px solid var(--s1)}
+
+/* CARDS */
+.card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);overflow:hidden;margin-bottom:12px}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--b1)}
+.card-title{font-size:12px;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:6px}
+.card-title svg{width:12px;height:12px;stroke:var(--or);fill:none;stroke-width:2}
+.card-body{padding:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+
+/* STAT CARDS */
+.stat-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);padding:12px 14px}
+.stat-lbl{font-size:10px;color:var(--t3);font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:4px}
+.stat-lbl svg{width:11px;height:11px;stroke:var(--or);fill:none;stroke-width:2}
+.stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--t1);letter-spacing:-.5px;line-height:1}
+.stat-ch{font-size:10px;margin-top:4px}
+.up{color:var(--gr)}.down{color:var(--re)}
+
+/* TABLES */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;padding:8px 12px;background:var(--s3);border-bottom:1px solid var(--b1);text-align:left;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--b1);font-size:12px;color:var(--t2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.015)}
+.sc{display:flex;align-items:center;gap:8px}
+.si{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.sn{font-size:12px;font-weight:600;color:var(--t1)}
+.su{font-size:10px;color:var(--t3);font-family:monospace}
+.tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700}
+.tg{background:rgba(34,211,160,.12);color:var(--gr)}
+.tb2{background:rgba(61,139,255,.12);color:var(--bl)}
+.to{background:var(--og);color:var(--or)}
+.tp{background:rgba(157,111,255,.12);color:var(--pu)}
+.tr2{background:rgba(255,85,102,.12);color:var(--re)}
+.ty{background:rgba(245,200,66,.12);color:var(--ye)}
+.tgr{background:var(--b1);color:var(--t2)}
+.rv{font-weight:700;color:var(--gr)}
+.live-dot{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--gr)}
+.live-dot::before{content:'';display:block;width:5px;height:5px;border-radius:50%;background:var(--gr);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* FILTER BAR */
+.fb{display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.fs{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r8);padding:5px 9px;font-size:11px;color:var(--t2);cursor:pointer}
+.fi{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r8);padding:5px 9px;font-size:11px;color:var(--t1);width:160px}
+.fi::placeholder{color:var(--t3)}
+.fi:focus,.fs:focus{border-color:var(--ob)}
+
+/* PRODUCT GRID */
+.pg2{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.pc{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);overflow:hidden;cursor:pointer;transition:.15s}
+.pc:hover{border-color:var(--b3);transform:translateY(-2px)}
+.pc-img{height:100px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;border-bottom:1px solid var(--b1)}
+.pc-badge{position:absolute;top:6px;left:6px}
+.pc-info{padding:9px}
+.pc-name{font-size:11px;font-weight:600;color:var(--t1);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-price{font-size:13px;font-weight:700;color:var(--or);margin-bottom:4px}
+.pc-meta{display:flex;justify-content:space-between;font-size:10px}
+.pc-stores{color:var(--t3)}.pc-trend{color:var(--gr);font-weight:700}
+
+/* PROGRESS */
+.pw{margin-bottom:10px}
+.pt{display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px}
+.pn{color:var(--t2)}.pv{font-weight:600;color:var(--t1)}
+.pb{height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+.pf{height:100%;border-radius:2px}
+
+/* AI PANEL */
+.ai-panel{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r16);overflow:hidden}
+.ai-hdr{background:var(--s2);padding:10px 14px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:8px}
+.ai-hdr-icon{width:26px;height:26px;border-radius:7px;background:var(--or);display:flex;align-items:center;justify-content:center}
+.ai-hdr-icon svg{width:12px;height:12px;fill:#fff}
+.ai-msgs{padding:12px;display:flex;flex-direction:column;gap:8px;min-height:160px;max-height:300px;overflow-y:auto}
+.ai-msg{display:flex;gap:7px;align-items:flex-start}
+.ai-msg.user{flex-direction:row-reverse}
+.ai-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;margin-top:1px}
+.ai-av-bot{background:var(--or);color:#fff}
+.ai-av-user{background:var(--s4);color:var(--t2);border:1px solid var(--b2)}
+.ai-bub{max-width:82%;padding:7px 11px;border-radius:10px;font-size:11px;line-height:1.55}
+.ai-bub-bot{background:var(--s3);color:var(--t1);border:1px solid var(--b1)}
+.ai-bub-user{background:var(--or);color:#fff}
+.ai-typing{display:flex;gap:3px;padding:7px 11px;background:var(--s3);border:1px solid var(--b1);border-radius:10px;width:fit-content}
+.ai-typing span{width:4px;height:4px;border-radius:50%;background:var(--t3);animation:bounce .9s infinite}
+.ai-typing span:nth-child(2){animation-delay:.15s}
+.ai-typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-4px)}}
+.ai-inp-area{border-top:1px solid var(--b1);padding:9px 12px;display:flex;gap:7px;align-items:flex-end}
+.ai-inp-area textarea{flex:1;background:var(--s3);border:1px solid var(--b2);border-radius:var(--r8);padding:7px 10px;color:var(--t1);font-size:11px;resize:none;height:32px;line-height:1.4}
+.ai-inp-area textarea:focus{border-color:var(--ob)}
+.ai-inp-area textarea::placeholder{color:var(--t3)}
+.ai-send{width:32px;height:32px;border-radius:var(--r8);background:var(--or);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.ai-send:hover{background:var(--or2)}
+.ai-send svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2.5}
+.ai-chips{padding:0 12px 9px;display:flex;flex-wrap:wrap;gap:5px}
+.chip{background:var(--s3);border:1px solid var(--b2);border-radius:20px;padding:3px 9px;font-size:10px;color:var(--t2);cursor:pointer;transition:.12s;font-weight:500}
+.chip:hover{border-color:var(--ob);color:var(--or)}
+.credit-cost{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--or);font-weight:700}
+.credit-cost svg{width:9px;height:9px;stroke:var(--or);fill:none;stroke-width:2}
+
+/* CREDIT MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--s2);border:1px solid var(--b3);border-radius:var(--r20);padding:28px;width:460px;max-width:90vw;max-height:85vh;overflow-y:auto}
+.modal h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--t1);margin-bottom:6px}
+.modal p{font-size:13px;color:var(--t2);margin-bottom:20px}
+.plan-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.plan-card{background:var(--s3);border:1px solid var(--b2);border-radius:var(--r12);padding:14px;text-align:center;cursor:pointer;transition:.15s;position:relative}
+.plan-card:hover{border-color:var(--b3)}
+.plan-card.featured{border-color:var(--or);background:var(--og)}
+.plan-card.featured .plan-badge{display:block}
+.plan-badge{display:none;position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--or);color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:10px;white-space:nowrap}
+.plan-name{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.plan-price{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--t1);letter-spacing:-.5px;line-height:1}
+.plan-price sup{font-size:12px;color:var(--t2);font-weight:500}
+.plan-period{font-size:10px;color:var(--t3);margin-bottom:8px}
+.plan-credits{font-size:11px;font-weight:700;color:var(--or)}
+.plan-features{font-size:10px;color:var(--t3);line-height:1.6;margin-top:6px;text-align:left}
+.modal-close{float:right;background:var(--s4);border:1px solid var(--b2);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--t2);cursor:pointer}
+
+/* PRICING PAGE */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;max-width:860px;margin:0 auto}
+.price-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r16);padding:24px 20px;position:relative;transition:.2s}
+.price-card:hover{transform:translateY(-3px)}
+.price-card.featured{border-color:var(--or)}
+.price-card .pc-badge2{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--or);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;white-space:nowrap}
+.prc-name{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.prc-amount{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:var(--t1);letter-spacing:-1.5px;line-height:1}
+.prc-amount sup{font-size:18px;color:var(--t2);font-weight:500;vertical-align:super}
+.prc-period{font-size:11px;color:var(--t3);margin-bottom:6px}
+.prc-credits{display:inline-flex;align-items:center;gap:5px;background:var(--og);border:1px solid var(--ob);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--or);margin-bottom:16px}
+.prc-credits svg{width:10px;height:10px;stroke:var(--or);fill:none;stroke-width:2}
+.prc-divider{height:1px;background:var(--b1);margin-bottom:14px}
+.prc-features{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.prc-feature{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--t2)}
+.prc-feature svg{width:12px;height:12px;stroke:var(--gr);fill:none;stroke-width:2.5;flex-shrink:0}
+.prc-feature.dim svg{stroke:var(--t3)}
+.prc-feature.dim{color:var(--t3)}
+.prc-btn{width:100%;justify-content:center;padding:10px;border-radius:9px;font-size:13px}
+
+/* STORE DETAIL */
+.detail-hero{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r16);padding:20px;margin-bottom:12px}
+.detail-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px}
+.detail-icon{width:56px;height:56px;border-radius:13px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;border:1px solid var(--b2)}
+.detail-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--t1);letter-spacing:-.3px;margin-bottom:4px}
+.detail-url{font-size:12px;color:var(--bl);font-family:monospace;margin-bottom:8px}
+.detail-tags{display:flex;gap:6px;flex-wrap:wrap}
+.detail-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.ds{background:var(--s3);border-radius:9px;padding:10px 12px;text-align:center}
+.ds-v{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--or);letter-spacing:-.3px;line-height:1}
+.ds-l{font-size:10px;color:var(--t3);margin-top:3px}
+
+/* THEME DETECTOR */
+.theme-result{background:var(--s3);border:1px solid var(--b2);border-radius:var(--r12);padding:16px;margin-bottom:10px}
+.theme-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--or);margin-bottom:4px}
+.theme-meta{font-size:12px;color:var(--t2);margin-bottom:10px}
+
+/* MARGIN CALC */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.calc-input-group{margin-bottom:12px}
+.calc-label{font-size:11px;font-weight:600;color:var(--t2);margin-bottom:5px;display:block}
+.calc-input{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:var(--r8);padding:8px 12px;color:var(--t1);font-size:13px;font-weight:600}
+.calc-input:focus{border-color:var(--ob)}
+.calc-result{background:var(--og);border:1px solid var(--ob);border-radius:var(--r12);padding:14px}
+.calc-big{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--or);line-height:1;margin-bottom:4px}
+.calc-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--ob)}
+.calc-row:last-child{border-bottom:none}
+.calc-row-label{color:var(--t2)}.calc-row-val{font-weight:600;color:var(--t1)}
+
+/* CONTENT MANAGER */
+.cm-tabs{display:flex;gap:2px;background:var(--s3);border-radius:9px;padding:3px;margin-bottom:14px;overflow-x:auto}
+.cm-tab{padding:6px 14px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;color:var(--t3);transition:.12s;white-space:nowrap;border:none;background:none;font-family:'Inter',sans-serif}
+.cm-tab.active{background:var(--or);color:#fff}
+.cm-tab:hover:not(.active){color:var(--t2)}
+.cm-panel{display:none}.cm-panel.active{display:block}
+.content-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s3);border-radius:8px;margin-bottom:7px;cursor:pointer;transition:.1s}
+.content-row:hover{background:var(--s4)}
+.content-row-icon{width:28px;height:28px;border-radius:7px;background:var(--s2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.content-row-icon svg{width:12px;height:12px;stroke:var(--or);fill:none;stroke-width:2}
+.content-row-title{font-size:12px;font-weight:600;color:var(--t1);flex:1}
+.content-row-meta{font-size:10px;color:var(--t3)}
+.content-editor{background:var(--s3);border:1px solid var(--b2);border-radius:var(--r12);overflow:hidden}
+.editor-toolbar{padding:8px 12px;border-bottom:1px solid var(--b1);display:flex;gap:6px;flex-wrap:wrap}
+.et-btn{background:var(--s4);border:1px solid var(--b1);border-radius:5px;padding:4px 8px;font-size:11px;color:var(--t2);cursor:pointer;transition:.1s}
+.et-btn:hover{color:var(--t1);border-color:var(--b2)}
+.editor-body{padding:12px}
+.editor-field{margin-bottom:10px}
+.ef-label{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.ef-input{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:8px 10px;color:var(--t1);font-size:12px}
+.ef-input:focus{border-color:var(--ob)}
+.ef-textarea{width:100%;background:var(--s2);border:1px solid var(--b2);border-radius:7px;padding:8px 10px;color:var(--t1);font-size:12px;resize:none;min-height:80px;line-height:1.5}
+.ef-textarea:focus{border-color:var(--ob)}
+.seo-score{display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(34,211,160,.07);border:1px solid rgba(34,211,160,.15);border-radius:8px;margin-top:8px}
+.seo-score-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--gr)}
+.seo-score-label{font-size:11px;color:var(--gr);font-weight:600}
+
+/* BULK ANALYZER */
+.bulk-upload{border:2px dashed var(--b3);border-radius:var(--r12);padding:28px;text-align:center;cursor:pointer;transition:.15s;margin-bottom:12px}
+.bulk-upload:hover{border-color:var(--ob);background:var(--og)}
+.bulk-upload svg{width:32px;height:32px;stroke:var(--t3);fill:none;stroke-width:1.5;margin:0 auto 8px;display:block}
+.bulk-status{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--s3);border-radius:8px;margin-bottom:6px}
+.bulk-progress{flex:1;height:4px;background:var(--s4);border-radius:2px;overflow:hidden}
+.bulk-prog-fill{height:100%;border-radius:2px;background:var(--or);transition:width .5s}
+.bulk-pct{font-size:11px;font-weight:700;color:var(--or);min-width:32px;text-align:right}
+
+/* SUPPLIER FINDER */
+.supplier-card{background:var(--s3);border:1px solid var(--b2);border-radius:var(--r12);padding:14px;margin-bottom:10px;cursor:pointer;transition:.15s}
+.supplier-card:hover{border-color:var(--b3)}
+.sup-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sup-icon{width:36px;height:36px;border-radius:8px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sup-name{font-size:13px;font-weight:700;color:var(--t1)}
+.sup-platform{font-size:10px;color:var(--t3)}
+.sup-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sup-stat{text-align:center;background:var(--s2);border-radius:6px;padding:7px 4px}
+.sup-stat-v{font-size:12px;font-weight:700;color:var(--or);display:block}
+.sup-stat-l{font-size:9px;color:var(--t3)}
+
+/* COMPARISON TABLE */
+.comp-table{width:100%;border-collapse:collapse}
+.comp-table th{padding:10px 14px;background:var(--s3);border-bottom:1px solid var(--b1);font-size:11px;font-weight:700;color:var(--t2);text-align:left}
+.comp-table th:first-child{width:160px}
+.comp-table td{padding:10px 14px;border-bottom:1px solid var(--b1);font-size:12px;color:var(--t2);vertical-align:middle}
+.comp-table tr:hover td{background:rgba(255,255,255,.015)}
+.comp-table td:first-child{font-weight:600;color:var(--t1)}
+.comp-check{color:var(--gr);font-size:14px}
+.comp-x{color:var(--re);font-size:14px}
+.comp-winner{background:rgba(240,120,32,.07)}
+
+/* TOGGLE */
+.toggle{width:36px;height:20px;border-radius:20px;background:var(--or);position:relative;cursor:pointer;flex-shrink:0;transition:.2s}
+.toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;right:3px;transition:.2s}
+.toggle.off{background:var(--s4)}
+.toggle.off::after{right:auto;left:3px}
+
+/* ALERT ITEMS */
+.alert-item{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-radius:var(--r8);margin-bottom:7px}
+.alert-item.ai{background:rgba(61,139,255,.08);border:1px solid rgba(61,139,255,.15)}
+.alert-item.as{background:rgba(34,211,160,.08);border:1px solid rgba(34,211,160,.15)}
+.alert-item.aw{background:var(--og);border:1px solid var(--ob)}
+.alert-item.ad{background:rgba(255,85,102,.08);border:1px solid rgba(255,85,102,.15)}
+.alert-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-icon svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* WHOIS */
+.wt{width:100%;font-size:12px;border-collapse:collapse}
+.wt td{padding:7px 0;border-bottom:1px solid var(--b1);vertical-align:top}
+.wt tr:last-child td{border-bottom:none}
+.wt td:first-child{color:var(--t3);white-space:nowrap;padding-right:16px;width:120px;font-weight:500}
+.wt td:last-child{color:var(--t1);word-break:break-word}
+.raw{background:var(--s3);border-radius:8px;padding:10px;font-size:10px;font-family:monospace;color:var(--t2);line-height:1.8;max-height:200px;overflow-y:auto;word-break:break-all}
+
+/* SCORE / TDK */
+.score-item{padding:10px 0;border-bottom:1px solid var(--b1)}
+.score-item:last-child{border-bottom:none}
+.score-name{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:4px}
+.score-meta{display:flex;gap:16px;font-size:11px;color:var(--t3)}
+.score-v{color:var(--or);font-weight:700}
+.tdk-t{width:100%;font-size:12px;border-collapse:collapse}
+.tdk-t td{padding:7px 0;border-bottom:1px solid var(--b1);vertical-align:top}
+.tdk-t tr:last-child td{border-bottom:none}
+.tdk-t td:first-child{color:var(--t3);min-width:90px;font-weight:500;padding-right:14px}
+
+/* AD CARDS */
+.ad-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.ac{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);overflow:hidden;cursor:pointer;transition:.15s}
+.ac:hover{border-color:var(--b3)}
+.ac-img{height:130px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:34px;border-bottom:1px solid var(--b1)}
+.ac-info{padding:10px}
+.ac-brand{font-size:10px;color:var(--t3);margin-bottom:3px;font-weight:600}
+.ac-copy{font-size:11px;font-weight:500;color:var(--t1);line-height:1.4;margin-bottom:8px}
+.ac-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px}
+.ac-stat{background:var(--s3);border-radius:5px;padding:5px 3px;text-align:center}
+.ac-stat-v{font-size:11px;font-weight:700;color:var(--t1);display:block}
+.ac-stat-l{font-size:9px;color:var(--t3)}
+.ac-foot{border-top:1px solid var(--b1);padding:7px 10px;display:flex;justify-content:space-between;align-items:center}
+
+/* KW */
+.kw-item{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--b1)}
+.kw-item:last-child{border-bottom:none}
+.kw-rank{width:20px;height:20px;border-radius:4px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--t3);flex-shrink:0}
+.kw-term{flex:1;font-size:12px;font-weight:500;color:var(--t1)}
+.kw-vol{font-size:11px;color:var(--t2);min-width:52px;text-align:right}
+.kw-trend2{min-width:46px;text-align:right;font-size:11px;font-weight:700;color:var(--gr)}
+
+/* SETTINGS */
+.setting-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--b1)}
+.setting-row:last-child{border-bottom:none}
+.setting-icon{width:32px;height:32px;border-radius:8px;background:var(--og);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.setting-icon svg{width:14px;height:14px;stroke:var(--or);fill:none;stroke-width:1.8}
+.setting-body{flex:1}
+.setting-title{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:1px}
+.setting-sub{font-size:10px;color:var(--t3)}
+</style>
+</head>
+<body>
+
+<!-- CREDIT MODAL -->
+<div class="modal-overlay hidden" id="creditModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕ Close</button>
+    <h2>Get More Credits</h2>
+    <p>Credits power AI analysis, store spy, bulk scans and premium lookups. Choose a plan below.</p>
+    <div class="plan-cards">
+      <div class="plan-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price"><sup>$</sup>0</div>
+        <div class="plan-period">Free forever</div>
+        <div class="plan-credits">100 credits/mo</div>
+        <div class="plan-features">• Store spy (5/day)<br>• Basic AI<br>• Theme detect<br>• Whois lookup</div>
+        <button class="btn btn-ghost" style="width:100%;margin-top:10px;justify-content:center;font-size:11px" onclick="closeModal()">Current Plan</button>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-badge">Most Popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup>$</sup>49</div>
+        <div class="plan-period">per month</div>
+        <div class="plan-credits">2,000 credits/mo</div>
+        <div class="plan-features">• Unlimited store spy<br>• Full AI assistant<br>• Ad spy access<br>• Bulk analyzer<br>• Supplier finder<br>• CSV export</div>
+        <button class="btn btn-primary" style="width:100%;margin-top:10px;justify-content:center;font-size:11px" onclick="buyPlan('Pro',2000)">Upgrade to Pro</button>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Business</div>
+        <div class="plan-price"><sup>$</sup>149</div>
+        <div class="plan-period">per month</div>
+        <div class="plan-credits">10,000 credits/mo</div>
+        <div class="plan-features">• Everything in Pro<br>• API access<br>• 5 team seats<br>• White-label reports<br>• Priority support<br>• Batch analysis</div>
+        <button class="btn btn-primary" style="width:100%;margin-top:10px;justify-content:center;font-size:11px" onclick="buyPlan('Business',10000)">Get Business</button>
+      </div>
+    </div>
+    <div style="background:var(--s3);border-radius:10px;padding:12px;font-size:11px;color:var(--t3)">
+      <strong style="color:var(--t1)">Credit costs:</strong><br>
+      Store Spy = 2 credits · Bulk Analyze = 5 credits/store · AI Query = 1 credit<br>
+      Supplier Lookup = 3 credits · Ad Spy = 1 credit · Export CSV = 2 credits
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-box"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <div><div class="sb-logo-text">ECSPY</div><div class="sb-logo-ver">v2.0 PRO</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Overview</div>
+    <button class="ni active" onclick="go('dashboard',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button>
+    <div class="sb-sec">Spy Tools</div>
+    <button class="ni" onclick="go('shopify',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/></svg>Shopify Spy<span class="nb nb-or">47K</span></button>
+    <button class="ni" onclick="go('wordpress',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20"/></svg>WordPress Spy</button>
+    <button class="ni" onclick="go('storedetail',this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Store Deep Spy<span class="nb nb-bl">New</span></button>
+    <button class="ni" onclick="go('bulk',this)"><svg viewBox="0 0 24 24"><path d="M22 12H2M22 6H2M22 18H2"/></svg>Bulk Analyzer<span class="nb nb-gr">New</span></button>
+    <div class="sb-sec">Products</div>
+    <button class="ni" onclick="go('products',this)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Winning Products<span class="nb nb-gr">47</span></button>
+    <button class="ni" onclick="go('ads',this)"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Ad Spy</button>
+    <button class="ni" onclick="go('supplier',this)"><svg viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11a2 2 0 012 2v3M9 21h10a2 2 0 002-2v-7a2 2 0 00-2-2H9a2 2 0 00-2 2v7a2 2 0 002 2z"/></svg>Supplier Finder<span class="nb nb-bl">New</span></button>
+    <div class="sb-sec">Research</div>
+    <button class="ni" onclick="go('keywords',this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Keywords</button>
+    <button class="ni" onclick="go('theme',this)"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Theme Detector<span class="nb nb-bl">New</span></button>
+    <button class="ni" onclick="go('tdk',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>TDK Analyzer</button>
+    <button class="ni" onclick="go('whois',this)"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Whois Lookup</button>
+    <button class="ni" onclick="go('compare',this)"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Competitor Compare<span class="nb nb-bl">New</span></button>
+    <div class="sb-sec">Tools</div>
+    <button class="ni" onclick="go('margin',this)"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Margin Calculator<span class="nb nb-gr">New</span></button>
+    <button class="ni" onclick="go('content',this)"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Content Manager<span class="nb nb-gr">New</span></button>
+    <button class="ni" onclick="go('ai',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>AI Assistant<span class="nb nb-or">Free</span></button>
+    <div class="sb-sec">Account</div>
+    <button class="ni" onclick="go('pricing',this)"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Pricing<span class="nb nb-bl">New</span></button>
+    <button class="ni" onclick="go('alerts',this)"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>Alerts<span class="nb nb-re">3</span></button>
+    <button class="ni" onclick="go('settings',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>Settings</button>
+  </nav>
+  <div class="sb-foot">
+    <div class="credit-box" onclick="openModal()" style="cursor:pointer">
+      <div class="credit-top">
+        <div class="credit-title">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+          Credits
+        </div>
+        <div class="credit-count" id="creditDisplay">340</div>
+      </div>
+      <div class="credit-bar"><div class="credit-fill" id="creditBar" style="width:34%"></div></div>
+      <div class="credit-sub">340 of 1,000 used · Click to top up</div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-av">JD</div>
+      <div><div class="sb-uname">John Doe</div><div class="sb-uplan">PRO Plan · 28d left</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="pg-title" id="pgTitle">Dashboard</div>
+    <div class="search-bar"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" placeholder="Search stores, products, keywords..."></div>
+    <div class="tb-right">
+      <div class="tb-credit" onclick="openModal()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span class="tb-credit-text" id="tbCredit">660 credits left</span>
+      </div>
+      <div class="notif-btn"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot"></div></div>
+      <button class="btn btn-primary" onclick="go('ai',document.querySelector('[onclick*=\\'ai\\']'))">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        Ask AI
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="pg-dashboard">
+      <div class="grid4">
+        <div class="stat-card"><div class="stat-lbl"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/></svg>Stores Tracked</div><div class="stat-val">2,847</div><div class="stat-ch up">↑ +128 this week</div></div>
+        <div class="stat-card"><div class="stat-lbl"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Winning Products</div><div class="stat-val">47</div><div class="stat-ch up">↑ +12 today</div></div>
+        <div class="stat-card"><div class="stat-lbl"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Ads Monitored</div><div class="stat-val">18.4K</div><div class="stat-ch up">↑ +2.3K this week</div></div>
+        <div class="stat-card"><div class="stat-lbl"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Keywords Live</div><div class="stat-val">934</div><div class="stat-ch down">↓ 23 removed</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg>Hot Stores Now</div><button class="btn btn-ghost btn-sm" onclick="go('shopify',document.querySelector('[onclick*=shopify]'))">View All</button></div>
+          <table class="tbl"><thead><tr><th>Store</th><th>Platform</th><th>Revenue</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><div class="sc"><div class="si" style="background:#1a0f00">🔥</div><div><div class="sn">HotTrends</div><div class="su">hottrends.myshopify.com</div></div></div></td><td><span class="tag tg">Shopify</span></td><td class="rv">$118K/mo</td><td><span class="live-dot">Live</span></td></tr>
+            <tr><td><div class="sc"><div class="si" style="background:#001220">🎯</div><div><div class="sn">GadgetZone</div><div class="su">gadgetzone.com</div></div></div></td><td><span class="tag tb2">WooCommerce</span></td><td class="rv">$42K/mo</td><td><span class="live-dot">Live</span></td></tr>
+            <tr><td><div class="sc"><div class="si" style="background:#0f001a">💎</div><div><div class="sn">LuxeFinds</div><div class="su">luxefinds.com</div></div></div></td><td><span class="tag tg">Shopify</span></td><td class="rv">$61K/mo</td><td><span class="live-dot">Live</span></td></tr>
+          </tbody></table>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card">
+            <div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Top Niches</div></div>
+            <div class="card-body">
+              <div class="pw"><div class="pt"><span class="pn">Health & Beauty</span><span class="pv">34%</span></div><div class="pb"><div class="pf" style="width:34%;background:var(--or)"></div></div></div>
+              <div class="pw"><div class="pt"><span class="pn">Home & Garden</span><span class="pv">27%</span></div><div class="pb"><div class="pf" style="width:27%;background:var(--gr)"></div></div></div>
+              <div class="pw"><div class="pt"><span class="pn">Pet Supplies</span><span class="pv">19%</span></div><div class="pb"><div class="pf" style="width:19%;background:var(--bl)"></div></div></div>
+              <div class="pw"><div class="pt"><span class="pn">Electronics</span><span class="pv">12%</span></div><div class="pb"><div class="pf" style="width:12%;background:var(--pu)"></div></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Activity</div></div>
+            <div class="card-body">
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;gap:8px"><div style="width:24px;height:24px;border-radius:50%;background:var(--og);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--or)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div><div style="font-size:11px;color:var(--t1)">New winning product in <strong>Beauty</strong></div><div style="font-size:10px;color:var(--t3)">2 min ago</div></div></div>
+                <div style="display:flex;gap:8px"><div style="width:24px;height:24px;border-radius:50%;background:rgba(34,211,160,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--gr)" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg></div><div><div style="font-size:11px;color:var(--t1)"><strong>HotTrends</strong> revenue +340%</div><div style="font-size:10px;color:var(--t3)">14 min ago</div></div></div>
+                <div style="display:flex;gap:8px"><div style="width:24px;height:24px;border-radius:50%;background:rgba(61,139,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--bl)" stroke-width="2"><circle cx="11" cy="11" r="8"/></svg></div><div><div style="font-size:11px;color:var(--t1)">Keyword <strong>"posture corrector"</strong> trending</div><div style="font-size:10px;color:var(--t3)">1 hr ago</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Revenue Trends</div></div><div class="card-body"><canvas id="dashChart" height="90"></canvas></div></div>
+    </div>
+
+    <!-- SHOPIFY SPY -->
+    <div class="page" id="pg-shopify">
+      <div class="fb"><select class="fs"><option>All Countries</option><option>US</option><option>UK</option><option>AU</option></select><select class="fs"><option>All Revenue</option><option>$0–10K</option><option>$10K–50K</option><option>$50K+</option></select><select class="fs"><option>All Niches</option><option>Beauty</option><option>Pets</option><option>Home</option></select><input class="fi" placeholder="Search store..."><button class="btn btn-primary btn-sm" onclick="useCredit(2,'Store Spy')">Apply (2 credits)</button><button class="btn btn-ghost btn-sm" onclick="useCredit(2,'Export')">Export CSV</button></div>
+      <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg>Shopify Stores — 47,320 found</div><span class="credit-cost"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>2 credits per spy</span></div>
+      <div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Store</th><th>Niche</th><th>Revenue</th><th>Products</th><th>Traffic</th><th>Theme</th><th>Apps</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td><div class="sc"><div class="si" style="background:#1a0f00">🔥</div><div><div class="sn">HotTrends</div><div class="su">hottrends.myshopify.com</div></div></div></td><td><span class="tag to">Fashion</span></td><td class="rv">$118,420</td><td>54</td><td>284K</td><td style="font-family:monospace;font-size:11px;color:var(--t2)">Dawn</td><td><span class="tag tgr">+14</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="go('storedetail',document.querySelector('[onclick*=storedetail]'))">Deep Spy</button><button class="btn btn-primary btn-sm" onclick="useCredit(2,'Store Spy')">Spy</button></div></td></tr>
+        <tr><td><div class="sc"><div class="si" style="background:#001a0f">🛍️</div><div><div class="sn">TrendHaven</div><div class="su">trendhaven.myshopify.com</div></div></div></td><td><span class="tag tp">Beauty</span></td><td class="rv">$84,200</td><td>312</td><td>196K</td><td style="font-family:monospace;font-size:11px;color:var(--t2)">Debut</td><td><span class="tag tgr">+9</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="go('storedetail',document.querySelector('[onclick*=storedetail]'))">Deep Spy</button><button class="btn btn-primary btn-sm" onclick="useCredit(2,'Store Spy')">Spy</button></div></td></tr>
+        <tr><td><div class="sc"><div class="si" style="background:#001520">🐾</div><div><div class="sn">PawsomeLife</div><div class="su">pawsomelife.myshopify.com</div></div></div></td><td><span class="tag tg">Pets</span></td><td class="rv">$48,900</td><td>178</td><td>108K</td><td style="font-family:monospace;font-size:11px;color:var(--t2)">Turbo</td><td><span class="tag tgr">+11</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="go('storedetail',document.querySelector('[onclick*=storedetail]'))">Deep Spy</button><button class="btn btn-primary btn-sm" onclick="useCredit(2,'Store Spy')">Spy</button></div></td></tr>
+        <tr><td><div class="sc"><div class="si" style="background:#001220">💪</div><div><div class="sn">FitForge</div><div class="su">fitforge.myshopify.com</div></div></div></td><td><span class="tag tb2">Fitness</span></td><td style="font-weight:600;color:var(--t1)">$32,500</td><td>91</td><td>73K</td><td style="font-family:monospace;font-size:11px;color:var(--t2)">Impulse</td><td><span class="tag tgr">+6</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="go('storedetail',document.querySelector('[onclick*=storedetail]'))">Deep Spy</button><button class="btn btn-primary btn-sm" onclick="useCredit(2,'Store Spy')">Spy</button></div></td></tr>
+      </tbody></table></div></div>
+    </div>
+
+    <!-- WORDPRESS SPY -->
+    <div class="page" id="pg-wordpress">
+      <div class="grid2">
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>WooCommerce Stores</div></div>
+          <table class="tbl"><thead><tr><th>Store</th><th>WP Ver</th><th>Revenue</th><th>Plugins</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><div class="sc"><div class="si" style="background:#001220">🎯</div><div><div class="sn">GadgetZone</div><div class="su">gadgetzone.com</div></div></div></td><td><span class="tag tb2">6.4</span></td><td class="rv">$42K</td><td>34</td><td><button class="btn btn-primary btn-sm" onclick="useCredit(2,'WP Spy')">Spy</button></td></tr>
+            <tr><td><div class="sc"><div class="si" style="background:#1a0a00">🏠</div><div><div class="sn">HomeHaven</div><div class="su">homehaven.co</div></div></div></td><td><span class="tag tg">6.3</span></td><td class="rv">$28K</td><td>28</td><td><button class="btn btn-primary btn-sm" onclick="useCredit(2,'WP Spy')">Spy</button></td></tr>
+            <tr><td><div class="sc"><div class="si" style="background:#0f001a">🧴</div><div><div class="sn">SkinGlow Labs</div><div class="su">skinglowlabs.com</div></div></div></td><td><span class="tag to">6.1</span></td><td style="font-weight:600;color:var(--t1)">$14K</td><td>22</td><td><button class="btn btn-primary btn-sm" onclick="useCredit(2,'WP Spy')">Spy</button></td></tr>
+          </tbody></table>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Top Plugins</div></div>
+          <div class="card-body">
+            <div class="kw-item"><div class="kw-rank" style="background:var(--og);color:var(--or)">1</div><div class="kw-term">WooCommerce</div><div class="kw-vol">98.2%</div><div><span class="tag tg">Core</span></div></div>
+            <div class="kw-item"><div class="kw-rank">2</div><div class="kw-term">Yoast SEO</div><div class="kw-vol">74.1%</div><div><span class="tag tb2">SEO</span></div></div>
+            <div class="kw-item"><div class="kw-rank">3</div><div class="kw-term">Elementor Pro</div><div class="kw-vol">68.9%</div><div><span class="tag tp">Builder</span></div></div>
+            <div class="kw-item"><div class="kw-rank">4</div><div class="kw-term">WP Rocket</div><div class="kw-vol">54.7%</div><div><span class="tag tgr">Speed</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STORE DEEP SPY -->
+    <div class="page" id="pg-storedetail">
+      <div class="detail-hero">
+        <div class="detail-top">
+          <div class="detail-icon">🔥</div>
+          <div style="flex:1">
+            <div class="detail-name">HotTrends Store</div>
+            <div class="detail-url">hottrends.myshopify.com</div>
+            <div class="detail-tags"><span class="tag tg">Shopify</span><span class="tag to">Fashion</span><span class="tag tgr">Dawn Theme</span><span class="tag ty">Viral</span></div>
+          </div>
+          <div style="display:flex;gap:7px">
+            <button class="btn btn-ghost btn-sm" onclick="useCredit(2,'Export')">Export CSV</button>
+            <button class="btn btn-primary btn-sm">Save Store</button>
+          </div>
+        </div>
+        <div class="detail-stats">
+          <div class="ds"><div class="ds-v">$118K</div><div class="ds-l">Est. Revenue/mo</div></div>
+          <div class="ds"><div class="ds-v">284K</div><div class="ds-l">Monthly Visits</div></div>
+          <div class="ds"><div class="ds-v">54</div><div class="ds-l">Products</div></div>
+          <div class="ds"><div class="ds-v">14</div><div class="ds-l">Apps Installed</div></div>
+          <div class="ds"><div class="ds-v">3.2%</div><div class="ds-l">Conv. Rate</div></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Top Products</div><button class="btn btn-ghost btn-sm" onclick="useCredit(2,'Export')">Export</button></div>
+          <table class="tbl"><thead><tr><th>#</th><th>Product</th><th>Price</th><th>Orders</th><th>Trend</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--or);font-weight:700">1</td><td style="font-weight:600;color:var(--t1)">Posture Corrector Pro</td><td>$34.99</td><td style="color:var(--gr);font-weight:600">847</td><td><span class="tag tr2">↑847%</span></td></tr>
+            <tr><td style="color:var(--t3);font-weight:600">2</td><td style="font-weight:600;color:var(--t1)">LED Resistance Set</td><td>$29.99</td><td style="color:var(--gr);font-weight:600">612</td><td><span class="tag tg">↑312%</span></td></tr>
+            <tr><td style="color:var(--t3);font-weight:600">3</td><td style="font-weight:600;color:var(--t1)">Bamboo Organizer</td><td>$24.50</td><td>389</td><td><span class="tag to">↑189%</span></td></tr>
+            <tr><td style="color:var(--t3);font-weight:600">4</td><td style="font-weight:600;color:var(--t1)">Massage Gun Pro</td><td>$59.99</td><td>271</td><td><span class="tag tgr">+stable</span></td></tr>
+          </tbody></table>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>App Stack</div></div>
+          <table class="tbl"><thead><tr><th>App</th><th>Category</th><th>Est. Cost</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600;color:var(--t1)">Klaviyo</td><td><span class="tag tb2">Email</span></td><td>$150/mo</td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">Yotpo Reviews</td><td><span class="tag to">Reviews</span></td><td>$79/mo</td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">ReConvert</td><td><span class="tag tg">Upsell</span></td><td>$49/mo</td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">Loox Photos</td><td><span class="tag to">Social Proof</span></td><td>$39/mo</td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">Lucky Orange</td><td><span class="tag tb2">Analytics</span></td><td>$19/mo</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+      <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Traffic Sources</div></div>
+        <div class="card-body"><div class="grid4" style="margin-bottom:0">
+          <div class="pw" style="margin:0"><div class="pt"><span class="pn">Direct</span><span class="pv">74%</span></div><div class="pb"><div class="pf" style="width:74%;background:var(--or)"></div></div></div>
+          <div class="pw" style="margin:0"><div class="pt"><span class="pn">Search</span><span class="pv">16%</span></div><div class="pb"><div class="pf" style="width:16%;background:var(--bl)"></div></div></div>
+          <div class="pw" style="margin:0"><div class="pt"><span class="pn">Social</span><span class="pv">7%</span></div><div class="pb"><div class="pf" style="width:7%;background:var(--pu)"></div></div></div>
+          <div class="pw" style="margin:0"><div class="pt"><span class="pn">Referral</span><span class="pv">3%</span></div><div class="pb"><div class="pf" style="width:3%;background:var(--gr)"></div></div></div>
+        </div></div>
+      </div>
+    </div>
+
+    <!-- BULK ANALYZER -->
+    <div class="page" id="pg-bulk">
+      <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><path d="M22 12H2M22 6H2M22 18H2"/></svg>Bulk Store Analyzer</div><span class="credit-cost"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>5 credits/store</span></div>
+            <div class="card-body">
+              <div class="bulk-upload" onclick="startBulk()">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:4px">Drop URLs or Upload CSV</div>
+                <div style="font-size:11px;color:var(--t3)">Supports up to 500 stores per batch · 5 credits per store</div>
+              </div>
+              <textarea style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:8px;padding:10px;color:var(--t1);font-size:11px;font-family:monospace;resize:none;height:100px;margin-bottom:10px" placeholder="Or paste URLs here, one per line:&#10;https://store1.myshopify.com&#10;https://store2.com&#10;https://store3.myshopify.com"></textarea>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="startBulk()">Start Bulk Analysis</button>
+                <button class="btn btn-ghost btn-sm">Load Sample</button>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Analysis Queue</div></div>
+            <div class="card-body" id="bulkQueue">
+              <div style="font-size:12px;color:var(--t3);text-align:center;padding:16px 0">No active jobs. Start a bulk scan above.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Bulk Results</div><button class="btn btn-ghost btn-sm" onclick="useCredit(2,'Export')">Export All</button></div>
+          <table class="tbl" id="bulkResults">
+            <thead><tr><th>Store</th><th>Revenue</th><th>Products</th><th>Score</th></tr></thead>
+            <tbody>
+              <tr><td><div class="sn">hottrends.myshopify.com</div></td><td class="rv">$118K</td><td>54</td><td><span class="tag tg">98/100</span></td></tr>
+              <tr><td><div class="sn">trendhaven.myshopify.com</div></td><td class="rv">$84K</td><td>312</td><td><span class="tag tg">91/100</span></td></tr>
+              <tr><td><div class="sn">pawsomelife.myshopify.com</div></td><td class="rv">$49K</td><td>178</td><td><span class="tag to">72/100</span></td></tr>
+              <tr><td><div class="sn">fitforge.myshopify.com</div></td><td style="color:var(--t1);font-weight:600">$32K</td><td>91</td><td><span class="tag to">64/100</span></td></tr>
+              <tr><td><div class="sn">ecodrops.myshopify.com</div></td><td style="color:var(--t1);font-weight:600">$29K</td><td>145</td><td><span class="tag tgr">58/100</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- WINNING PRODUCTS -->
+    <div class="page" id="pg-products">
+      <div class="fb"><select class="fs"><option>All Platforms</option><option>Shopify</option><option>WooCommerce</option></select><select class="fs"><option>All Niches</option><option>Beauty</option><option>Home</option><option>Pets</option></select><select class="fs"><option>Sort: Trending ↓</option><option>Sort: Revenue ↓</option><option>Newest</option></select><button class="btn btn-primary btn-sm" onclick="useCredit(1,'Product Search')">Find Products</button></div>
+      <div class="pg2">
+        <div class="pc"><div class="pc-img">🎯<div class="pc-badge"><span class="tag tr2">Viral</span></div></div><div class="pc-info"><div class="pc-name">Posture Corrector Pro</div><div class="pc-price">$34.99</div><div class="pc-meta"><span class="pc-stores">12 stores</span><span class="pc-trend">↑847%</span></div></div></div>
+        <div class="pc"><div class="pc-img">💡<div class="pc-badge"><span class="tag to">Hot</span></div></div><div class="pc-info"><div class="pc-name">LED Desk Lamp Touch</div><div class="pc-price">$29.99</div><div class="pc-meta"><span class="pc-stores">8 stores</span><span class="pc-trend">↑312%</span></div></div></div>
+        <div class="pc"><div class="pc-img">🐶<div class="pc-badge"><span class="tag tg">Trend</span></div></div><div class="pc-info"><div class="pc-name">Pet GPS Tracker</div><div class="pc-price">$49.99</div><div class="pc-meta"><span class="pc-stores">19 stores</span><span class="pc-trend">↑428%</span></div></div></div>
+        <div class="pc"><div class="pc-img">🧴<div class="pc-badge"><span class="tag tb2">New</span></div></div><div class="pc-info"><div class="pc-name">Vitamin C Serum</div><div class="pc-price">$24.99</div><div class="pc-meta"><span class="pc-stores">31 stores</span><span class="pc-trend">↑195%</span></div></div></div>
+        <div class="pc"><div class="pc-img">🏋️<div class="pc-badge"><span class="tag to">Hot</span></div></div><div class="pc-info"><div class="pc-name">Resistance Band Set</div><div class="pc-price">$19.99</div><div class="pc-meta"><span class="pc-stores">24 stores</span><span class="pc-trend">↑261%</span></div></div></div>
+        <div class="pc"><div class="pc-img">🔌<div class="pc-badge"><span class="tag tr2">Viral</span></div></div><div class="pc-info"><div class="pc-name">240W GaN Charger</div><div class="pc-price">$44.99</div><div class="pc-meta"><span class="pc-stores">6 stores</span><span class="pc-trend">↑920%</span></div></div></div>
+        <div class="pc"><div class="pc-img">🪴<div class="pc-badge"><span class="tag tg">Trend</span></div></div><div class="pc-info"><div class="pc-name">Self-Watering Planter</div><div class="pc-price">$22.50</div><div class="pc-meta"><span class="pc-stores">7 stores</span><span class="pc-trend">↑380%</span></div></div></div>
+        <div class="pc"><div class="pc-img">😴<div class="pc-badge"><span class="tag tb2">New</span></div></div><div class="pc-info"><div class="pc-name">Sleep Sound Machine</div><div class="pc-price">$38.00</div><div class="pc-meta"><span class="pc-stores">15 stores</span><span class="pc-trend">↑174%</span></div></div></div>
+      </div>
+    </div>
+
+    <!-- AD SPY -->
+    <div class="page" id="pg-ads">
+      <div class="fb"><select class="fs"><option>All Platforms</option><option>Facebook</option><option>TikTok</option><option>Instagram</option><option>Google</option></select><select class="fs"><option>All Types</option><option>Video</option><option>Image</option><option>Carousel</option></select><input class="fi" placeholder="Search brand or keyword..."><button class="btn btn-primary btn-sm" onclick="useCredit(1,'Ad Spy')">Search</button></div>
+      <div class="ad-grid">
+        <div class="ac"><div class="ac-img">🎯</div><div class="ac-info"><div class="ac-brand">Facebook · HotTrends</div><div class="ac-copy">"Say goodbye to back pain FOREVER with this doctor-approved device!"</div><div class="ac-stats"><div class="ac-stat"><span class="ac-stat-v">284K</span><div class="ac-stat-l">Impressions</div></div><div class="ac-stat"><span class="ac-stat-v">4.8%</span><div class="ac-stat-l">CTR</div></div><div class="ac-stat"><span class="ac-stat-v">34d</span><div class="ac-stat-l">Running</div></div></div></div><div class="ac-foot"><div style="display:flex;gap:3px"><span class="tag tr2">Video</span><span class="tag tgr">US</span></div><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-primary btn-sm" onclick="useCredit(1,'Ad Copy')">Copy</button></div></div></div>
+        <div class="ac"><div class="ac-img">💡</div><div class="ac-info"><div class="ac-brand">TikTok · LuxeFinds</div><div class="ac-copy">"This lamp changed my WFH setup completely 🔥 selling out fast"</div><div class="ac-stats"><div class="ac-stat"><span class="ac-stat-v">1.2M</span><div class="ac-stat-l">Views</div></div><div class="ac-stat"><span class="ac-stat-v">7.2%</span><div class="ac-stat-l">CTR</div></div><div class="ac-stat"><span class="ac-stat-v">18d</span><div class="ac-stat-l">Running</div></div></div></div><div class="ac-foot"><div style="display:flex;gap:3px"><span class="tag tb2">Video</span><span class="tag tgr">US</span></div><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-primary btn-sm" onclick="useCredit(1,'Ad Copy')">Copy</button></div></div></div>
+        <div class="ac"><div class="ac-img">🐶</div><div class="ac-info"><div class="ac-brand">Instagram · PawsomeLife</div><div class="ac-copy">"Never lose your pet again. GPS precision, 30-day battery life."</div><div class="ac-stats"><div class="ac-stat"><span class="ac-stat-v">540K</span><div class="ac-stat-l">Impressions</div></div><div class="ac-stat"><span class="ac-stat-v">3.1%</span><div class="ac-stat-l">CTR</div></div><div class="ac-stat"><span class="ac-stat-v">52d</span><div class="ac-stat-l">Running</div></div></div></div><div class="ac-foot"><div style="display:flex;gap:3px"><span class="tag tg">Image</span><span class="tag tgr">AU</span></div><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-primary btn-sm" onclick="useCredit(1,'Ad Copy')">Copy</button></div></div></div>
+        <div class="ac"><div class="ac-img">🧴</div><div class="ac-info"><div class="ac-brand">Facebook · TrendHaven</div><div class="ac-copy">"Dermatologist #1 pick: erases dark spots in 14 days guaranteed"</div><div class="ac-stats"><div class="ac-stat"><span class="ac-stat-v">920K</span><div class="ac-stat-l">Impressions</div></div><div class="ac-stat"><span class="ac-stat-v">5.7%</span><div class="ac-stat-l">CTR</div></div><div class="ac-stat"><span class="ac-stat-v">61d</span><div class="ac-stat-l">Running</div></div></div></div><div class="ac-foot"><div style="display:flex;gap:3px"><span class="tag tp">Carousel</span><span class="tag tgr">US</span></div><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-primary btn-sm" onclick="useCredit(1,'Ad Copy')">Copy</button></div></div></div>
+      </div>
+    </div>
+
+    <!-- SUPPLIER FINDER -->
+    <div class="page" id="pg-supplier">
+      <div class="fb"><input class="fi" style="width:240px" placeholder="Enter product name to find supplier..."><select class="fs"><option>All Platforms</option><option>AliExpress</option><option>CJ Dropshipping</option><option>Spocket</option><option>DHgate</option></select><button class="btn btn-primary btn-sm" onclick="useCredit(3,'Supplier Lookup')">Find Suppliers (3 credits)</button></div>
+      <div class="grid2">
+        <div>
+          <div class="supplier-card" onclick="useCredit(3,'Supplier Detail')">
+            <div class="sup-header"><div class="sup-icon">🏭</div><div><div class="sup-name">ShenZhen ProGoods Ltd.</div><div class="sup-platform">AliExpress · Gold Supplier · 6 years</div></div><span class="tag tg" style="margin-left:auto">98% Rating</span></div>
+            <div class="sup-stats"><div class="sup-stat"><span class="sup-stat-v">$4.20</span><div class="sup-stat-l">Unit Price</div></div><div class="sup-stat"><span class="sup-stat-v">10 pcs</span><div class="sup-stat-l">Min Order</div></div><div class="sup-stat"><span class="sup-stat-v">7-12d</span><div class="sup-stat-l">Shipping</div></div><div class="sup-stat"><span class="sup-stat-v">2,847</span><div class="sup-stat-l">Orders</div></div></div>
+          </div>
+          <div class="supplier-card" onclick="useCredit(3,'Supplier Detail')">
+            <div class="sup-header"><div class="sup-icon">📦</div><div><div class="sup-name">CJ Dropshipping — Posture Pro</div><div class="sup-platform">CJ Dropshipping · Verified</div></div><span class="tag tb2" style="margin-left:auto">94% Rating</span></div>
+            <div class="sup-stats"><div class="sup-stat"><span class="sup-stat-v">$5.80</span><div class="sup-stat-l">Unit Price</div></div><div class="sup-stat"><span class="sup-stat-v">1 pc</span><div class="sup-stat-l">Min Order</div></div><div class="sup-stat"><span class="sup-stat-v">5-9d</span><div class="sup-stat-l">Shipping</div></div><div class="sup-stat"><span class="sup-stat-v">1,204</span><div class="sup-stat-l">Orders</div></div></div>
+          </div>
+          <div class="supplier-card" onclick="useCredit(3,'Supplier Detail')">
+            <div class="sup-header"><div class="sup-icon">🌐</div><div><div class="sup-name">Guangzhou WellFit Factory</div><div class="sup-platform">DHgate · Top Merchant</div></div><span class="tag to" style="margin-left:auto">89% Rating</span></div>
+            <div class="sup-stats"><div class="sup-stat"><span class="sup-stat-v">$3.40</span><div class="sup-stat-l">Unit Price</div></div><div class="sup-stat"><span class="sup-stat-v">50 pcs</span><div class="sup-stat-l">Min Order</div></div><div class="sup-stat"><span class="sup-stat-v">10-18d</span><div class="sup-stat-l">Shipping</div></div><div class="sup-stat"><span class="sup-stat-v">5,610</span><div class="sup-stat-l">Orders</div></div></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Margin Calculator</div></div>
+          <div class="card-body">
+            <div class="calc-input-group"><label class="calc-label">Supplier Cost (per unit)</label><input class="calc-input" type="number" id="sc2" value="4.20" oninput="calcMargin2()"></div>
+            <div class="calc-input-group"><label class="calc-label">Shipping Cost</label><input class="calc-input" type="number" id="ship2" value="2.50" oninput="calcMargin2()"></div>
+            <div class="calc-input-group"><label class="calc-label">Selling Price</label><input class="calc-input" type="number" id="sp2" value="34.99" oninput="calcMargin2()"></div>
+            <div class="calc-result">
+              <div style="font-size:10px;color:var(--or);font-weight:700;margin-bottom:4px">NET PROFIT</div>
+              <div class="calc-big" id="margin2">$28.29</div>
+              <div class="calc-row"><span class="calc-row-label">Gross Margin</span><span class="calc-row-val" id="gm2">80.8%</span></div>
+              <div class="calc-row"><span class="calc-row-label">Break-even Units</span><span class="calc-row-val" id="be2">36/mo</span></div>
+              <div class="calc-row"><span class="calc-row-label">Monthly Revenue (100 sales)</span><span class="calc-row-val" id="mr2">$2,829</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KEYWORDS -->
+    <div class="page" id="pg-keywords">
+      <div class="grid2">
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Trending Keywords</div></div>
+          <div class="card-body">
+            <div class="kw-item"><div class="kw-rank" style="background:var(--og);color:var(--or)">1</div><div class="kw-term">posture corrector</div><div class="kw-vol">74K/mo</div><div class="kw-trend2">↑ 847%</div></div>
+            <div class="kw-item"><div class="kw-rank">2</div><div class="kw-term">gan charger 100w</div><div class="kw-vol">49K/mo</div><div class="kw-trend2">↑ 620%</div></div>
+            <div class="kw-item"><div class="kw-rank">3</div><div class="kw-term">pet gps collar</div><div class="kw-vol">33K/mo</div><div class="kw-trend2">↑ 428%</div></div>
+            <div class="kw-item"><div class="kw-rank">4</div><div class="kw-term">vitamin c serum</div><div class="kw-vol">110K/mo</div><div class="kw-trend2">↑ 195%</div></div>
+            <div class="kw-item"><div class="kw-rank">5</div><div class="kw-term">led desk lamp usb</div><div class="kw-vol">27K/mo</div><div class="kw-trend2">↑ 312%</div></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2z"/></svg>My Keywords</div><button class="btn btn-primary btn-sm">+ Add</button></div>
+          <table class="tbl"><thead><tr><th>Keyword</th><th>Volume</th><th>CPC</th><th>Comp.</th><th>Trend</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600;color:var(--t1)">posture corrector</td><td>74K</td><td style="color:var(--gr);font-weight:600">$1.84</td><td><span class="tag to">Med</span></td><td style="color:var(--gr);font-weight:700">↑847%</td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">resistance bands set</td><td>40K</td><td style="color:var(--gr);font-weight:600">$0.92</td><td><span class="tag tg">Low</span></td><td style="color:var(--gr);font-weight:700">↑261%</td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">vitamin c face serum</td><td>110K</td><td style="color:var(--or);font-weight:600">$2.30</td><td><span class="tag tr2">High</span></td><td style="color:var(--gr);font-weight:700">↑195%</td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">pet gps tracker</td><td>33K</td><td style="color:var(--gr);font-weight:600">$1.10</td><td><span class="tag to">Med</span></td><td style="color:var(--gr);font-weight:700">↑428%</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- THEME DETECTOR -->
+    <div class="page" id="pg-theme">
+      <div class="grid2">
+        <div>
+          <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Theme Detector</div><span class="credit-cost"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>1 credit</span></div>
+            <div class="card-body">
+              <div style="display:flex;gap:8px;margin-bottom:14px"><input class="fi" style="flex:1;width:auto" placeholder="Enter store URL..." value="hottrends.myshopify.com"><button class="btn btn-primary" onclick="detectTheme()">Detect Theme</button></div>
+              <div class="theme-result">
+                <div class="theme-name">Dawn</div>
+                <div class="theme-meta">Version 14.0 · Official Shopify Theme · Free</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><span class="tag tg">Free</span><span class="tag tb2">Official</span><span class="tag to">Customized</span><span class="tag tgr">Sections: 14</span></div>
+                <table style="width:100%;font-size:12px;border-collapse:collapse">
+                  <tr style="border-bottom:1px solid var(--b1)"><td style="color:var(--t3);padding:5px 0;width:130px">Color Scheme</td><td style="color:var(--t1);padding:5px 0;font-weight:500">Custom overrides applied</td></tr>
+                  <tr style="border-bottom:1px solid var(--b1)"><td style="color:var(--t3);padding:5px 0">Typography</td><td style="color:var(--t1);padding:5px 0;font-weight:500">Modified (3 custom fonts)</td></tr>
+                  <tr style="border-bottom:1px solid var(--b1)"><td style="color:var(--t3);padding:5px 0">Page Speed</td><td style="color:var(--gr);padding:5px 0;font-weight:700">94 / 100</td></tr>
+                  <tr><td style="color:var(--t3);padding:5px 0">Custom CSS</td><td style="color:var(--t1);padding:5px 0;font-weight:500">1,240 lines detected</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>Most Popular Themes</div></div>
+            <table class="tbl"><thead><tr><th>Theme</th><th>Stores</th><th>Avg Revenue</th><th>Type</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:600;color:var(--t1)">Dawn</td><td>12,400</td><td class="rv">$34K</td><td><span class="tag tg">Free</span></td></tr>
+              <tr><td style="font-weight:600;color:var(--t1)">Debut</td><td>9,800</td><td class="rv">$28K</td><td><span class="tag tg">Free</span></td></tr>
+              <tr><td style="font-weight:600;color:var(--t1)">Prestige</td><td>4,200</td><td class="rv">$82K</td><td><span class="tag to">Paid</span></td></tr>
+              <tr><td style="font-weight:600;color:var(--t1)">Turbo</td><td>3,900</td><td class="rv">$61K</td><td><span class="tag to">Paid</span></td></tr>
+              <tr><td style="font-weight:600;color:var(--t1)">Impulse</td><td>3,100</td><td class="rv">$54K</td><td><span class="tag to">Paid</span></td></tr>
+            </tbody></table>
+          </div>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Theme Comparison</div></div>
+          <div style="overflow-x:auto">
+          <table class="comp-table">
+            <thead><tr><th>Feature</th><th style="text-align:center">Dawn</th><th style="text-align:center">Prestige</th><th style="text-align:center">Turbo</th><th style="text-align:center">Impulse</th></tr></thead>
+            <tbody>
+              <tr><td>Mobile Optimized</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td></tr>
+              <tr><td>Video Hero</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-x">✗</td></tr>
+              <tr><td>Mega Menu</td><td style="text-align:center" class="comp-x">✗</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td></tr>
+              <tr><td>Quick Buy</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td></tr>
+              <tr><td>Infinite Scroll</td><td style="text-align:center" class="comp-x">✗</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-check">✓</td><td style="text-align:center" class="comp-x">✗</td></tr>
+              <tr><td>Price</td><td style="text-align:center;color:var(--gr);font-weight:700">Free</td><td style="text-align:center;color:var(--or);font-weight:700">$350</td><td style="text-align:center;color:var(--or);font-weight:700">$350</td><td style="text-align:center;color:var(--or);font-weight:700">$280</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TDK -->
+    <div class="page" id="pg-tdk">
+      <div class="grid2">
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Page Meta — Basic</div></div>
+          <div class="card-body"><table class="tdk-t">
+            <tr><td>Title</td><td>Web SaaS Shopify WordPress spy and dropship chrome extension</td></tr>
+            <tr><td>Description</td><td>The ultimate research tool to boost your e-commerce insights.</td></tr>
+            <tr><td>Keywords</td><td style="color:var(--t3)">—</td></tr>
+            <tr><td>Language</td><td>American English</td></tr>
+            <tr><td>Canonical</td><td style="color:var(--bl);font-family:monospace;font-size:11px">https://ecspy.net/en</td></tr>
+          </table></div>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Content Keywords</div></div>
+          <div class="card-body" style="padding:0 14px">
+            <div class="score-item"><div class="score-name">extension</div><div class="score-meta"><span>Score <span class="score-v">100.00</span></span><span>Density <span class="score-v">2.27%</span></span></div></div>
+            <div class="score-item"><div class="score-name">chrome</div><div class="score-meta"><span>Score <span class="score-v">81.14</span></span><span>Density <span class="score-v">1.59%</span></span></div></div>
+            <div class="score-item"><div class="score-name">spy</div><div class="score-meta"><span>Score <span class="score-v">79.52</span></span><span>Density <span class="score-v">1.59%</span></span></div></div>
+            <div class="score-item"><div class="score-name">shopify</div><div class="score-meta"><span>Score <span class="score-v">63.63</span></span><span>Density <span class="score-v">1.36%</span></span></div></div>
+            <div class="score-item"><div class="score-name">dropship</div><div class="score-meta"><span>Score <span class="score-v">58.91</span></span><span>Density <span class="score-v">1.14%</span></span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHOIS -->
+    <div class="page" id="pg-whois">
+      <div class="grid2">
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>Whois — claude.ai</div></div>
+          <div class="card-body"><table class="wt">
+            <tr><td>Domain</td><td>claude.ai</td></tr>
+            <tr><td>Registrar</td><td>MarkMonitor Inc.</td></tr>
+            <tr><td>Created</td><td>04/08/2018, 16:48:43</td></tr>
+            <tr><td>Expires</td><td>04/08/2029, 16:48:44</td></tr>
+            <tr><td>Updated</td><td>17/01/2025, 19:25:43</td></tr>
+            <tr><td>Status</td><td>clientDeleteProhibited · clientTransferProhibited</td></tr>
+            <tr><td>Name Servers</td><td>isla.ns.cloudflare.com, randy.ns.cloudflare.com</td></tr>
+          </table></div>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Raw Whois Data</div></div>
+          <div class="card-body"><div class="raw">Domain Name: claude.ai
+Registry Domain ID: be3cad9a48374aa88e0259e019d4270d-DONUTS
+Registrar WHOIS Server: whois.markmonitor.com
+Registrar URL: http://www.markmonitor.com
+Updated Date: 2025-01-17T19:25:43Z
+Created Date: 2018-08-04T15:48:43Z
+Expiry Date: 2029-08-04T15:48:44Z
+Registrar: MarkMonitor Inc.
+Registrar IANA ID: 292
+Domain Status: clientDeleteProhibited
+Domain Status: clientTransferProhibited
+Domain Status: clientUpdateProhibited
+Name Server: isla.ns.cloudflare.com
+Name Server: randy.ns.cloudflare.com
+Registrant Organization: Anthropic, PBC</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPETITOR COMPARE -->
+    <div class="page" id="pg-compare">
+      <div class="card" style="margin-bottom:12px"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Competitor Comparison Table</div><button class="btn btn-ghost btn-sm" onclick="useCredit(2,'Export Compare')">Export</button></div>
+        <div style="overflow-x:auto"><table class="comp-table">
+          <thead><tr><th>Metric</th><th class="comp-winner">HotTrends 🏆</th><th>TrendHaven</th><th>LuxeFinds</th><th>PawsomeLife</th><th>FitForge</th></tr></thead>
+          <tbody>
+            <tr><td>Est. Revenue/mo</td><td class="comp-winner" style="color:var(--gr);font-weight:700">$118K</td><td>$84K</td><td>$61K</td><td>$49K</td><td>$32K</td></tr>
+            <tr><td>Monthly Traffic</td><td class="comp-winner" style="color:var(--or);font-weight:700">284K</td><td>196K</td><td>142K</td><td>108K</td><td>73K</td></tr>
+            <tr><td>Products</td><td class="comp-winner">54</td><td>312</td><td>203</td><td>178</td><td>91</td></tr>
+            <tr><td>Avg. CPC</td><td class="comp-winner" style="color:var(--gr);font-weight:700">$0.84</td><td>$1.20</td><td>$1.84</td><td>$0.92</td><td>$1.10</td></tr>
+            <tr><td>Conv. Rate</td><td class="comp-winner" style="color:var(--gr);font-weight:700">3.2%</td><td>2.8%</td><td>2.1%</td><td>2.4%</td><td>1.9%</td></tr>
+            <tr><td>Apps Used</td><td class="comp-winner">14</td><td>9</td><td>7</td><td>11</td><td>6</td></tr>
+            <tr><td>Ad Spend Est.</td><td class="comp-winner" style="color:var(--or);font-weight:700">$24K/mo</td><td>$18K/mo</td><td>$12K/mo</td><td>$8K/mo</td><td>$5K/mo</td></tr>
+            <tr><td>Facebook Ads</td><td class="comp-winner"><span class="comp-check">✓</span></td><td><span class="comp-check">✓</span></td><td><span class="comp-check">✓</span></td><td><span class="comp-check">✓</span></td><td><span class="comp-x">✗</span></td></tr>
+            <tr><td>TikTok Ads</td><td class="comp-winner"><span class="comp-check">✓</span></td><td><span class="comp-check">✓</span></td><td><span class="comp-x">✗</span></td><td><span class="comp-x">✗</span></td><td><span class="comp-x">✗</span></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="grid3">
+        <div class="stat-card"><div class="stat-lbl">Market Leader</div><div class="stat-val" style="font-size:16px;color:var(--or)">HotTrends</div><div class="stat-ch up">↑ 340% MoM growth</div></div>
+        <div class="stat-card"><div class="stat-lbl">Best Value (CPC)</div><div class="stat-val" style="font-size:16px;color:var(--or)">HotTrends</div><div class="stat-ch up">$0.84 avg CPC</div></div>
+        <div class="stat-card"><div class="stat-lbl">Most Products</div><div class="stat-val" style="font-size:16px;color:var(--or)">TrendHaven</div><div class="stat-ch" style="color:var(--t3)">312 products</div></div>
+      </div>
+    </div>
+
+    <!-- MARGIN CALCULATOR -->
+    <div class="page" id="pg-margin">
+      <div class="grid2">
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Profit Margin Calculator</div><span style="font-size:10px;color:var(--gr);font-weight:600">Free Tool</span></div>
+          <div class="card-body">
+            <div class="calc-grid">
+              <div>
+                <div class="calc-input-group"><label class="calc-label">Product Cost ($)</label><input class="calc-input" type="number" id="pc" value="5.50" oninput="calcMargin()"></div>
+                <div class="calc-input-group"><label class="calc-label">Shipping Cost ($)</label><input class="calc-input" type="number" id="shc" value="2.80" oninput="calcMargin()"></div>
+                <div class="calc-input-group"><label class="calc-label">Selling Price ($)</label><input class="calc-input" type="number" id="sp" value="34.99" oninput="calcMargin()"></div>
+                <div class="calc-input-group"><label class="calc-label">Ad Spend per Sale ($)</label><input class="calc-input" type="number" id="ads" value="4.00" oninput="calcMargin()"></div>
+                <div class="calc-input-group"><label class="calc-label">Payment Fee (%)</label><input class="calc-input" type="number" id="fee" value="2.9" oninput="calcMargin()"></div>
+              </div>
+              <div>
+                <div class="calc-result">
+                  <div style="font-size:10px;color:var(--or);font-weight:700;margin-bottom:4px">NET PROFIT PER SALE</div>
+                  <div class="calc-big" id="netProfit">$20.67</div>
+                  <div style="font-size:10px;color:var(--t3);margin-bottom:10px">after all costs</div>
+                  <div class="calc-row"><span class="calc-row-label">Gross Margin</span><span class="calc-row-val" id="grossMargin">78.5%</span></div>
+                  <div class="calc-row"><span class="calc-row-label">Net Margin</span><span class="calc-row-val" id="netMargin">59.1%</span></div>
+                  <div class="calc-row"><span class="calc-row-label">ROAS Needed (2x)</span><span class="calc-row-val" id="roas">$8.00</span></div>
+                  <div class="calc-row"><span class="calc-row-label">Break-even (100 sales)</span><span class="calc-row-val" id="breakeven">$2,067</span></div>
+                  <div class="calc-row"><span class="calc-row-label">Monthly (500 sales)</span><span class="calc-row-val" id="monthly">$10,335</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Margin Scenarios</div></div>
+          <div class="card-body"><canvas id="marginChart" height="200"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT MANAGER -->
+    <div class="page" id="pg-content">
+      <div class="cm-tabs" id="cmTabs">
+        <button class="cm-tab active" onclick="cmTab('pages',this)">Pages</button>
+        <button class="cm-tab" onclick="cmTab('posts',this)">Posts</button>
+        <button class="cm-tab" onclick="cmTab('products2',this)">Products</button>
+        <button class="cm-tab" onclick="cmTab('categories',this)">Categories</button>
+        <button class="cm-tab" onclick="cmTab('tags',this)">Tags</button>
+        <button class="cm-tab" onclick="cmTab('attributes',this)">Attributes</button>
+        <button class="cm-tab" onclick="cmTab('seo',this)">SEO Editor</button>
+        <button class="cm-tab" onclick="cmTab('aiwriter',this)">AI Writer</button>
+      </div>
+      <div class="grid2" style="align-items:start">
+        <div>
+          <div class="cm-panel active" id="cm-pages"><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div><div class="content-row-title">Home Page</div><div class="content-row-meta">Published · 2.4K views</div></div><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div><div class="content-row-title">About Us</div><div class="content-row-meta">Published · 840 views</div></div><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div><div class="content-row-title">Contact</div><div class="content-row-meta">Published · 320 views</div></div><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div><div class="content-row-title">Privacy Policy</div><div class="content-row-meta">Draft</div></div></div>
+          <div class="cm-panel" id="cm-posts"><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/></svg></div><div class="content-row-title">Top 10 Winning Products 2026</div><div class="content-row-meta">Published · Mar 18</div></div><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/></svg></div><div class="content-row-title">How to Spy on Shopify Stores</div><div class="content-row-meta">Published · Mar 10</div></div><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/></svg></div><div class="content-row-title">Best Dropshipping Niches 2026</div><div class="content-row-meta">Draft</div></div></div>
+          <div class="cm-panel" id="cm-products2"><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg></div><div class="content-row-title">Posture Corrector Pro</div><div class="content-row-meta">In Stock · $34.99</div></div><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg></div><div class="content-row-title">LED Desk Lamp Touch</div><div class="content-row-meta">In Stock · $29.99</div></div><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg></div><div class="content-row-title">Pet GPS Tracker Collar</div><div class="content-row-meta">In Stock · $49.99</div></div></div>
+          <div class="cm-panel" id="cm-categories"><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/></svg></div><div class="content-row-title">Health & Beauty</div><div class="content-row-meta">34 products</div></div><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/></svg></div><div class="content-row-title">Pets & Animals</div><div class="content-row-meta">18 products</div></div><div class="content-row"><div class="content-row-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/></svg></div><div class="content-row-title">Electronics</div><div class="content-row-meta">22 products</div></div></div>
+          <div class="cm-panel" id="cm-tags"><div class="card-body" style="padding:0"><div style="display:flex;flex-wrap:wrap;gap:7px;padding:12px"><span class="tag to" style="cursor:pointer">dropshipping</span><span class="tag tg" style="cursor:pointer">winning-products</span><span class="tag tb2" style="cursor:pointer">shopify</span><span class="tag tp" style="cursor:pointer">beauty</span><span class="tag tgr" style="cursor:pointer">trending</span><span class="tag tr2" style="cursor:pointer">viral</span><span class="tag ty" style="cursor:pointer">pets</span><span class="tag tg" style="cursor:pointer">home-garden</span><span class="tag tb2" style="cursor:pointer">electronics</span><span class="tag to" style="cursor:pointer">fitness</span><span class="tag tgr" style="cursor:pointer">2026</span><span class="tag tg" style="cursor:pointer">ecommerce</span></div></div></div>
+          <div class="cm-panel" id="cm-attributes"><table class="tbl"><thead><tr><th>Attribute</th><th>Values</th><th>Type</th></tr></thead><tbody><tr><td style="font-weight:600;color:var(--t1)">Color</td><td>Black, White, Navy, Red</td><td><span class="tag tgr">Select</span></td></tr><tr><td style="font-weight:600;color:var(--t1)">Size</td><td>XS, S, M, L, XL, XXL</td><td><span class="tag tgr">Select</span></td></tr><tr><td style="font-weight:600;color:var(--t1)">Material</td><td>Cotton, Polyester, Nylon</td><td><span class="tag tgr">Select</span></td></tr></tbody></table></div>
+          <div class="cm-panel" id="cm-seo">
+            <div class="content-editor">
+              <div class="editor-toolbar"><button class="et-btn">H1</button><button class="et-btn">H2</button><button class="et-btn">Bold</button><button class="et-btn">Italic</button><button class="et-btn">Link</button><button class="et-btn">Image</button></div>
+              <div class="editor-body">
+                <div class="editor-field"><div class="ef-label">SEO Title</div><input class="ef-input" type="text" value="Posture Corrector Pro — Fix Back Pain in 30 Days | ECSPY Store"></div>
+                <div class="editor-field"><div class="ef-label">Meta Description</div><textarea class="ef-textarea">Doctor-approved posture corrector with adjustable straps. Fix your back pain, improve posture, and feel confident — results in just 30 days. Free shipping.</textarea></div>
+                <div class="editor-field"><div class="ef-label">Focus Keyword</div><input class="ef-input" type="text" value="posture corrector"></div>
+                <div class="editor-field"><div class="ef-label">Slug / URL</div><input class="ef-input" type="text" value="/products/posture-corrector-pro"></div>
+                <div class="seo-score"><div class="seo-score-val">87</div><div><div class="seo-score-label">SEO Score</div><div style="font-size:10px;color:var(--t3)">Good · 3 suggestions</div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="cm-panel" id="cm-aiwriter">
+            <div class="ai-panel">
+              <div class="ai-hdr">
+                <div class="ai-hdr-icon"><svg viewBox="0 0 24 24"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2z"/></svg></div>
+                <div><div style="font-size:12px;font-weight:700;color:var(--t1)">AI Content Writer</div><div style="font-size:10px;color:var(--t2)">1 credit per generation</div></div>
+              </div>
+              <div class="ai-msgs" id="writerMsgs">
+                <div class="ai-msg"><div class="ai-av ai-av-bot">AI</div><div class="ai-bub ai-bub-bot">I can write product titles, descriptions, meta tags, blog posts, category descriptions, ad copy, and more. Tell me what you need!</div></div>
+              </div>
+              <div class="ai-chips"><div class="chip" onclick="writerSend('Write a product title for posture corrector')">Product title</div><div class="chip" onclick="writerSend('Write a product description for LED desk lamp')">Product description</div><div class="chip" onclick="writerSend('Write meta description for a pet GPS tracker')">Meta description</div><div class="chip" onclick="writerSend('Write a blog intro about winning dropship products')">Blog intro</div><div class="chip" onclick="writerSend('Write Facebook ad copy for a posture corrector')">Ad copy</div></div>
+              <div class="ai-inp-area">
+                <textarea id="writerInput" placeholder="Describe what content you need..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();writerSend()}"></textarea>
+                <div class="ai-send" onclick="writerSend()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- SEO Meta Preview -->
+        <div>
+          <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Google Preview</div></div>
+            <div class="card-body">
+              <div style="background:var(--s3);border-radius:8px;padding:12px">
+                <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ecspy.net › products › posture-corrector-pro</div>
+                <div style="font-size:14px;color:var(--bl);font-weight:600;margin-bottom:4px;line-height:1.3">Posture Corrector Pro — Fix Back Pain in 30 Days | ECSPY</div>
+                <div style="font-size:11px;color:var(--t2);line-height:1.5">Doctor-approved posture corrector with adjustable straps. Fix your back pain, improve posture, and feel confident — results in just 30 days. Free shipping.</div>
+              </div>
+            </div>
+          </div>
+          <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Content Analytics</div></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px;background:var(--s3);border-radius:7px"><span style="font-size:11px;color:var(--t2)">Word Count</span><span style="font-size:12px;font-weight:700;color:var(--t1)">284 words</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px;background:var(--s3);border-radius:7px"><span style="font-size:11px;color:var(--t2)">Readability</span><span style="font-size:12px;font-weight:700;color:var(--gr)">Easy</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px;background:var(--s3);border-radius:7px"><span style="font-size:11px;color:var(--t2)">Keyword Density</span><span style="font-size:12px;font-weight:700;color:var(--or)">2.1%</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px;background:var(--s3);border-radius:7px"><span style="font-size:11px;color:var(--t2)">Internal Links</span><span style="font-size:12px;font-weight:700;color:var(--t1)">3</span></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:7px;background:var(--s3);border-radius:7px"><span style="font-size:11px;color:var(--t2)">Images</span><span style="font-size:12px;font-weight:700;color:var(--t1)">4 (alt tags: 3/4)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI ASSISTANT -->
+    <div class="page" id="pg-ai">
+      <div class="grid2" style="align-items:start">
+        <div>
+          <div class="ai-panel">
+            <div class="ai-hdr">
+              <div class="ai-hdr-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+              <div><div style="font-size:12px;font-weight:700;color:var(--t1)">ECSPY AI Assistant</div><div style="font-size:10px;color:var(--t2)">1 credit per query · Built-in AI · No API key</div></div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:5px;font-size:10px;color:var(--gr)"><div style="width:5px;height:5px;border-radius:50%;background:var(--gr);animation:pulse 1.8s infinite"></div>Online</div>
+            </div>
+            <div class="ai-msgs" id="aiMessages">
+              <div class="ai-msg"><div class="ai-av ai-av-bot">AI</div><div class="ai-bub ai-bub-bot">Hey! I'm your ECSPY AI — ask me anything about stores, products, niches, ad strategies, SEO, sourcing, or dropshipping. Each query costs 1 credit.</div></div>
+            </div>
+            <div class="ai-chips">
+              <div class="chip" onclick="aiSend('What are the hottest dropshipping niches right now?')">Hot niches</div>
+              <div class="chip" onclick="aiSend('How do I find winning products on Shopify?')">Find winning products</div>
+              <div class="chip" onclick="aiSend('What apps do top Shopify stores use?')">Top apps</div>
+              <div class="chip" onclick="aiSend('Analyze the posture corrector niche')">Analyze niche</div>
+              <div class="chip" onclick="aiSend('How to spy on competitor ads effectively?')">Ad strategies</div>
+              <div class="chip" onclick="aiSend('What is a good profit margin for dropshipping?')">Margin benchmarks</div>
+            </div>
+            <div class="ai-inp-area">
+              <textarea id="aiInput" placeholder="Ask anything about e-commerce, stores, products..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend()}"></textarea>
+              <div class="ai-send" onclick="aiSend()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>AI Capabilities</div></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--t2)"><div style="width:16px;height:16px;border-radius:4px;background:var(--og);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg style="width:8px;height:8px;stroke:var(--or);fill:none;stroke-width:2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Analyze any store, niche or product trend</div>
+              <div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--t2)"><div style="width:16px;height:16px;border-radius:4px;background:var(--og);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg style="width:8px;height:8px;stroke:var(--or);fill:none;stroke-width:2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Write product descriptions and ad copy</div>
+              <div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--t2)"><div style="width:16px;height:16px;border-radius:4px;background:var(--og);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg style="width:8px;height:8px;stroke:var(--or);fill:none;stroke-width:2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Competitor strategy breakdown</div>
+              <div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--t2)"><div style="width:16px;height:16px;border-radius:4px;background:var(--og);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg style="width:8px;height:8px;stroke:var(--or);fill:none;stroke-width:2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>SEO keyword and content suggestions</div>
+              <div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--t2)"><div style="width:16px;height:16px;border-radius:4px;background:var(--og);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg style="width:8px;height:8px;stroke:var(--or);fill:none;stroke-width:2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Supplier & sourcing strategy advice</div>
+              <div style="display:flex;align-items:flex-start;gap:8px;font-size:11px;color:var(--t2)"><div style="width:16px;height:16px;border-radius:4px;background:var(--og);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg style="width:8px;height:8px;stroke:var(--or);fill:none;stroke-width:2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>Margin calculations and pricing strategy</div>
+            </div>
+          </div>
+          <div class="stat-card"><div class="stat-lbl">Credits Remaining</div><div class="stat-val" style="color:var(--or)" id="creditStat">660</div><div class="stat-ch" style="color:var(--t3)">of 1,000 monthly credits</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRICING -->
+    <div class="page" id="pg-pricing">
+      <div style="text-align:center;margin-bottom:28px">
+        <div style="font-size:11px;font-weight:700;color:var(--or);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Pricing</div>
+        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--t1);letter-spacing:-.5px;margin-bottom:8px">Simple, credit-based pricing</div>
+        <div style="font-size:13px;color:var(--t2)">Credits reset monthly. Unused credits roll over for 90 days.</div>
+      </div>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div class="prc-name">Starter</div>
+          <div class="prc-amount"><sup>$</sup>0</div>
+          <div class="prc-period">Free forever</div>
+          <div class="prc-credits"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>100 credits / month</div>
+          <div class="prc-divider"></div>
+          <div class="prc-features">
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>20 store analyses</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Chrome extension (basic)</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Theme & Whois lookup</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>5 AI queries/day</div>
+            <div class="prc-feature dim"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Ad spy</div>
+            <div class="prc-feature dim"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Bulk analyzer</div>
+            <div class="prc-feature dim"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>CSV export</div>
+          </div>
+          <button class="btn btn-ghost prc-btn">Current Plan</button>
+        </div>
+        <div class="price-card featured">
+          <div class="pc-badge2">Most Popular</div>
+          <div class="prc-name">Pro</div>
+          <div class="prc-amount"><sup>$</sup>49</div>
+          <div class="prc-period">per month</div>
+          <div class="prc-credits"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>2,000 credits / month</div>
+          <div class="prc-divider"></div>
+          <div class="prc-features">
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>500 store analyses</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Full Chrome extension</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>All spy tools unlocked</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Unlimited AI queries</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Ad spy (FB+TT+IG+Google)</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Bulk analyzer (100 stores)</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>CSV + bulk export</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Supplier finder</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Content manager + AI writer</div>
+          </div>
+          <button class="btn btn-primary prc-btn" onclick="openModal()">Start Pro — $49/mo</button>
+        </div>
+        <div class="price-card">
+          <div class="prc-name">Business</div>
+          <div class="prc-amount"><sup>$</sup>149</div>
+          <div class="prc-period">per month</div>
+          <div class="prc-credits"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>10,000 credits / month</div>
+          <div class="prc-divider"></div>
+          <div class="prc-features">
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Everything in Pro</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Unlimited bulk analysis</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>API access</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>5 team seats</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>White-label reports</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Priority support</div>
+            <div class="prc-feature"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Credits roll over 90 days</div>
+          </div>
+          <button class="btn btn-ghost prc-btn" onclick="openModal()">Contact Sales</button>
+        </div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r12);padding:16px;max-width:860px;margin:16px auto 0">
+        <div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:8px">Credit Cost Reference</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <div style="background:var(--s3);border-radius:7px;padding:9px 10px"><div style="font-size:11px;font-weight:700;color:var(--or)">1 credit</div><div style="font-size:11px;color:var(--t2)">Ad spy · AI query · Product search</div></div>
+          <div style="background:var(--s3);border-radius:7px;padding:9px 10px"><div style="font-size:11px;font-weight:700;color:var(--or)">2 credits</div><div style="font-size:11px;color:var(--t2)">Store spy · Theme detect · CSV export</div></div>
+          <div style="background:var(--s3);border-radius:7px;padding:9px 10px"><div style="font-size:11px;font-weight:700;color:var(--or)">3 credits</div><div style="font-size:11px;color:var(--t2)">Supplier lookup · Whois detail</div></div>
+          <div style="background:var(--s3);border-radius:7px;padding:9px 10px"><div style="font-size:11px;font-weight:700;color:var(--or)">5 credits</div><div style="font-size:11px;color:var(--t2)">Bulk analyze (per store)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="page" id="pg-alerts">
+      <div class="grid2">
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>Active Alerts</div><button class="btn btn-primary btn-sm">+ Create Alert</button></div>
+          <table class="tbl"><thead><tr><th>Alert</th><th>Trigger</th><th>Target</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600;color:var(--t1)">Revenue Spike</td><td>+100% in 24h</td><td>All Shopify</td><td><span class="live-dot">Active</span></td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">New Competitor</td><td>New store in niche</td><td>Beauty</td><td><span class="live-dot">Active</span></td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">Keyword Trend</td><td>Volume +200%</td><td>My keywords</td><td><span class="live-dot">Active</span></td></tr>
+            <tr><td style="font-weight:600;color:var(--t1)">Viral Ad Alert</td><td>Ad 30d+ running</td><td>All platforms</td><td><span class="tag to">Paused</span></td></tr>
+          </tbody></table>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Notifications</div></div>
+          <div class="card-body">
+            <div class="alert-item ad"><div class="alert-icon" style="background:rgba(255,85,102,.15);color:var(--re)"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div><div><div style="font-size:12px;font-weight:600;color:var(--t1)">HotTrends revenue spiked +340% in 24h</div><div style="font-size:10px;color:var(--t3)">Revenue Spike · 14 min ago</div></div></div>
+            <div class="alert-item ai"><div class="alert-icon" style="background:rgba(61,139,255,.15);color:var(--bl)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg></div><div><div style="font-size:12px;font-weight:600;color:var(--t1)">3 new stores in Beauty niche</div><div style="font-size:10px;color:var(--t3)">New Competitor · 2 hrs ago</div></div></div>
+            <div class="alert-item aw"><div class="alert-icon" style="background:var(--og);color:var(--or)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/></svg></div><div><div style="font-size:12px;font-weight:600;color:var(--t1)">"posture corrector" volume +847%</div><div style="font-size:10px;color:var(--t3)">Keyword Trend · 5 hrs ago</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="pg-settings">
+      <div class="grid2">
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Account Settings</div></div>
+          <div class="card-body">
+            <div style="background:rgba(61,139,255,.07);border:1px solid rgba(61,139,255,.15);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div><div style="font-size:13px;font-weight:700;color:var(--bl)">PRO Plan</div><div style="font-size:10px;color:var(--t2)">$49/mo · 28 days remaining · 660 credits left</div></div><button class="btn btn-ghost btn-sm" onclick="openModal()">Upgrade</button></div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <div><div style="font-size:10px;color:var(--t3);margin-bottom:4px;font-weight:600">Full Name</div><input type="text" value="John Doe" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:7px 10px;color:var(--t1);font-size:12px"></div>
+              <div><div style="font-size:10px;color:var(--t3);margin-bottom:4px;font-weight:600">Email</div><input type="email" value="john@example.com" style="width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:7px;padding:7px 10px;color:var(--t1);font-size:12px"></div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">Save Changes</button>
+          </div>
+        </div>
+        <div class="card"><div class="card-head"><div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Preferences</div></div>
+          <div class="card-body">
+            <div class="setting-row"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="setting-body"><div class="setting-title">Email Alerts</div><div class="setting-sub">Notifications for winning products</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+            <div class="setting-row"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2z"/></svg></div><div class="setting-body"><div class="setting-title">Extension Launcher</div><div class="setting-sub">Show on all web pages</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+            <div class="setting-row"><div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div><div class="setting-body"><div class="setting-title">Auto Weekly Report</div><div class="setting-sub">CSV export to email</div></div><div class="toggle off" onclick="this.classList.toggle('off')"></div></div>
+            <div class="setting-row"><div class="setting-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><div class="setting-body"><div class="setting-title">Low Credit Alert</div><div class="setting-sub">Notify when below 100 credits</div></div><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+            <div class="setting-row"><div class="setting-icon" style="background:rgba(255,85,102,.12)"><svg viewBox="0 0 24 24" style="stroke:var(--re)"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="setting-body"><div class="setting-title">Logout</div><div class="setting-sub">Sign out of your account</div></div><button class="btn btn-danger btn-sm">Logout</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+// State
+let credits=660;
+const maxCredits=1000;
+
+const titles={dashboard:'Dashboard',shopify:'Shopify Spy',wordpress:'WordPress / WooCommerce Spy',storedetail:'Store Deep Spy — HotTrends',bulk:'Bulk Store Analyzer',products:'Winning Products',ads:'Competitor Ad Spy',supplier:'Dropship Supplier Finder',keywords:'Keyword Tracker',theme:'Theme Detector',tdk:'TDK Analyzer',whois:'Whois Lookup',compare:'Competitor Comparison',margin:'Profit Margin Calculator',content:'Content Manager',ai:'AI Assistant',pricing:'Pricing',alerts:'Alerts',settings:'Settings'};
+
+function go(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  const p=document.getElementById('pg-'+id);
+  if(p)p.classList.add('active');
+  if(btn)btn.classList.add('active');
+  document.getElementById('pgTitle').textContent=titles[id]||id;
+  if(id==='dashboard'&&!window.dc){buildDashChart();window.dc=true;}
+  if(id==='margin'&&!window.mc){buildMarginChart();window.mc=true;}
+}
+
+// Credit system
+function useCredit(cost,action){
+  if(credits<cost){openModal();return;}
+  credits-=cost;
+  updateCredits();
+  showToast(`${action} — ${cost} credit${cost>1?'s':''} used`);
+}
+function updateCredits(){
+  const used=maxCredits-credits;
+  const pct=Math.round((used/maxCredits)*100);
+  document.getElementById('creditDisplay').textContent=credits;
+  document.getElementById('creditBar').style.width=pct+'%';
+  document.getElementById('tbCredit').textContent=credits+' credits left';
+  const s=document.getElementById('creditStat');
+  if(s)s.textContent=credits;
+}
+function openModal(){document.getElementById('creditModal').classList.remove('hidden')}
+function closeModal(){document.getElementById('creditModal').classList.add('hidden')}
+function buyPlan(name,newCredits){credits=newCredits;updateCredits();closeModal();showToast('Welcome to '+name+'! '+newCredits.toLocaleString()+' credits added.');}
+document.getElementById('creditModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// Toast
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:20px;right:20px;background:#1d2233;border:1px solid rgba(240,120,32,.4);border-radius:10px;padding:10px 16px;font-size:12px;color:#f0f2ff;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:fadeUp .25s ease';
+  t.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f07820" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>'+msg;
+  if(!document.querySelector('#toastStyle')){const s=document.createElement('style');s.id='toastStyle';s.textContent='@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}';document.head.appendChild(s);}
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2800);
+}
+
+// Charts
+function buildDashChart(){
+  const ctx=document.getElementById('dashChart');
+  if(!ctx)return;
+  new Chart(ctx,{type:'line',data:{labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],datasets:[{label:'Shopify',data:[38,45,42,55,62,70,68,82,91,88,102,118],borderColor:'#f07820',backgroundColor:'rgba(240,120,32,.07)',fill:true,tension:.4,pointRadius:2,borderWidth:2},{label:'WooCommerce',data:[22,28,31,29,38,42,40,48,52,49,56,61],borderColor:'#3d8bff',backgroundColor:'rgba(61,139,255,.05)',fill:true,tension:.4,pointRadius:2,borderWidth:2}]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#8892b0',font:{size:10},boxWidth:9}},tooltip:{backgroundColor:'#1d2233',borderColor:'rgba(255,255,255,.15)',borderWidth:1,titleColor:'#f0f2ff',bodyColor:'#8892b0'}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4a5270',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4a5270',font:{size:9},callback:v=>'$'+v+'K'}}}}});
+}
+
+function buildMarginChart(){
+  const ctx=document.getElementById('marginChart');
+  if(!ctx)return;
+  new Chart(ctx,{type:'bar',data:{labels:['50 sales','100 sales','200 sales','500 sales','1K sales'],datasets:[{label:'Revenue',data:[1750,3499,6998,17495,34990],backgroundColor:'rgba(240,120,32,.6)',borderRadius:4},{label:'Net Profit',data:[1033,2067,4133,10335,20670],backgroundColor:'rgba(34,211,160,.5)',borderRadius:4}]},options:{responsive:true,plugins:{legend:{labels:{color:'#8892b0',font:{size:10},boxWidth:9}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4a5270',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4a5270',font:{size:9},callback:v=>'$'+v.toLocaleString()}}}}});
+}
+
+// Margin calc
+function calcMargin(){
+  const pc=parseFloat(document.getElementById('pc').value)||0;
+  const shc=parseFloat(document.getElementById('shc').value)||0;
+  const sp=parseFloat(document.getElementById('sp').value)||0;
+  const ads=parseFloat(document.getElementById('ads').value)||0;
+  const fee=parseFloat(document.getElementById('fee').value)||0;
+  const feeAmt=sp*(fee/100);
+  const totalCost=pc+shc+ads+feeAmt;
+  const net=sp-totalCost;
+  const gross=((sp-(pc+shc))/sp*100);
+  const netMarg=(net/sp*100);
+  document.getElementById('netProfit').textContent='$'+Math.max(0,net).toFixed(2);
+  document.getElementById('grossMargin').textContent=Math.max(0,gross).toFixed(1)+'%';
+  document.getElementById('netMargin').textContent=Math.max(0,netMarg).toFixed(1)+'%';
+  document.getElementById('roas').textContent='$'+(ads*2).toFixed(2);
+  document.getElementById('breakeven').textContent='$'+Math.max(0,net*100).toFixed(0);
+  document.getElementById('monthly').textContent='$'+Math.max(0,net*500).toFixed(0);
+}
+
+function calcMargin2(){
+  const sc=parseFloat(document.getElementById('sc2').value)||0;
+  const sh=parseFloat(document.getElementById('ship2').value)||0;
+  const sp=parseFloat(document.getElementById('sp2').value)||0;
+  const net=sp-sc-sh;
+  const gm=(net/sp*100);
+  document.getElementById('margin2').textContent='$'+Math.max(0,net).toFixed(2);
+  document.getElementById('gm2').textContent=Math.max(0,gm).toFixed(1)+'%';
+  document.getElementById('be2').textContent=Math.ceil(200/Math.max(1,net))+'/mo';
+  document.getElementById('mr2').textContent='$'+Math.max(0,net*100).toFixed(0);
+}
+
+// Theme detector
+function detectTheme(){useCredit(1,'Theme Detection');showToast('Theme detected: Dawn v14.0');}
+
+// Bulk
+function startBulk(){
+  useCredit(25,'Bulk Analysis (5 stores)');
+  const q=document.getElementById('bulkQueue');
+  const stores=['hottrends.myshopify.com','trendhaven.myshopify.com','pawsomelife.myshopify.com','fitforge.myshopify.com','ecodrops.myshopify.com'];
+  q.innerHTML='';
+  stores.forEach((s,i)=>{
+    const pct=Math.min(100,Math.round(((i+1)/stores.length)*100));
+    const div=document.createElement('div');
+    div.className='bulk-status';
+    div.innerHTML=`<div style="font-size:11px;color:var(--t1);min-width:160px;font-family:monospace">${s}</div><div class="bulk-progress"><div class="bulk-prog-fill" style="width:${pct}%"></div></div><div class="bulk-pct">${pct}%</div>`;
+    q.appendChild(div);
+  });
+}
+
+// Content tabs
+function cmTab(id,btn){
+  document.querySelectorAll('.cm-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.cm-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel=document.getElementById('cm-'+id);
+  if(panel)panel.classList.add('active');
+}
+
+// AI responses
+const aiR={
+  'hot niches':'Right now the hottest dropshipping niches are:<br><br>1. <strong>Health & Wellness</strong> — Posture correctors, massage guns, sleep aids (↑847%)<br>2. <strong>Pet Accessories</strong> — GPS collars, premium feeders (↑428%)<br>3. <strong>Eco Products</strong> — Reusable goods, bamboo items<br>4. <strong>Home Office</strong> — LED lamps, desk organizers (↑312%)<br>5. <strong>Beauty Tech</strong> — LED face masks, microcurrent devices<br><br>Health & Pets have 60-80% gross margins available right now.',
+  'winning products':'To find winning products with ECSPY:<br><br>1. Filter by <strong>Trend Velocity</strong> — look for >200% growth<br>2. Check Ad Spy — if competitors are scaling ads it\'s proven<br>3. Sweet spot: 5–20 stores selling (proven, not saturated)<br>4. Verify supplier on AliExpress/CJ Dropshipping<br>5. Target $25–60 price for best impulse conversion<br><br><strong>Top pick now:</strong> Posture Corrector Pro (↑847%, only 12 stores)',
+  'apps':'Top Shopify apps by revenue tier:<br><br><strong>Email:</strong> Klaviyo (74%), Omnisend (18%)<br><strong>Reviews:</strong> Yotpo (41%), Judge.me (38%), Loox (29%)<br><strong>Upsell:</strong> ReConvert (52%), Zipify (31%)<br><strong>Analytics:</strong> Lucky Orange (36%), Triple Whale (22%)<br><br>$50K+/mo stores run 12–18 apps. Start with reviews + email — highest ROI.',
+  'posture corrector':'<strong>Posture Corrector Niche Analysis:</strong><br><br>Volume: 74K/mo (+847% trend) · CPC: $1.84<br>Top countries: US (42%), UK (18%), AU (12%)<br>Competitors: 12 stores scaling hard<br>Sell price: $29–49 · Source: ~$4-7<br>Margin: 75–80% gross<br><br><strong>Winning ad angle:</strong> "Doctor-approved" + before/after + pain hook in first 3 seconds. TikTok CTR 7%+ for this product.',
+  'ad strategies':'<strong>Competitor Ad Spy Strategy:</strong><br><br>1. Filter ads running 30+ days — proven profitable<br>2. High CTR (>3%) = strong creative + offer<br>3. Copy the angle, not the exact creative<br>4. TikTok video hooks: start with pain point or transformation<br>5. Facebook carousel works best for multi-product stores<br><br>Best performers use: pain point → solution → social proof → CTA in 15–30 seconds.',
+  'margin':'<strong>Dropshipping Margin Benchmarks:</strong><br><br>Beginner target: 40–50% gross margin<br>Intermediate: 55–70% gross margin<br>Expert: 70–80%+ gross margin<br><br>Net after ads: aim for 20–30% net margin<br>Ideal product price: $25–75 (impulse range)<br>ROAS target: 2.5–3x minimum<br><br>Use the Margin Calculator tool for exact figures on any product.',
+  'default':'Great question! Based on current ECSPY data I can help you explore this deeper.<br><br>The e-commerce landscape in 2026 is shifting fast — stores combining solid product research with strong ad creative are seeing 3–5x better ROAS than single-channel approaches.<br><br>Want me to:<br>• Analyze a specific niche in depth?<br>• Find competing stores for a product?<br>• Suggest ad angles based on what\'s working?<br>• Calculate margins for a specific product?'
+};
+
+function aiSend(msg){
+  useCredit(1,'AI Query');
+  const inp=document.getElementById('aiInput');
+  const text=msg||inp.value.trim();
+  if(!text)return;
+  inp.value='';
+  appendAI(text,true,'aiMessages');
+  const ti=appendTyping('aiMessages');
+  const key=Object.keys(aiR).find(k=>text.toLowerCase().includes(k));
+  const reply=aiR[key]||aiR.default;
+  setTimeout(()=>{ti.remove();appendAI(reply,false,'aiMessages');},900+Math.random()*500);
+}
+
+const writerR={
+  'product title':'<strong>3 Title Options for Posture Corrector:</strong><br><br>1. "PostureFix Pro — Doctor-Approved Back Corrector for Instant Relief"<br>2. "Adjustable Posture Corrector Belt — Fix Back Pain in 30 Days"<br>3. "Posture Corrector for Women & Men — Ergonomic Back Brace with Shoulder Support"<br><br>Tip: Include the main keyword early and a benefit/timeframe.',
+  'product description':'<strong>LED Desk Lamp Product Description:</strong><br><br>Transform your workspace with the UltraGlow LED Touch Lamp. Featuring 5 adjustable brightness levels, 3 color temperatures, and a 360° flexible neck that puts light exactly where you need it.<br><br>• USB-C charging port to keep your devices powered<br>• Touch-sensitive controls — no fiddly switches<br>• Eye-care mode reduces strain during long work sessions<br>• Space-saving design fits any desk<br><br>Perfect for students, remote workers, and night owls.',
+  'meta description':'<strong>Pet GPS Tracker Meta Description:</strong><br><br>Option A: "Never lose your pet again. Our GPS tracker collar gives real-time location updates, works in 150+ countries, and lasts 30 days per charge. Shop now."<br><br>Option B: "Track your dog or cat anywhere with our waterproof GPS collar. Real-time updates every 10 seconds. Peace of mind starts at $49.99."<br><br>Keep under 160 characters for best display.',
+  'blog intro':'<strong>Blog Intro — Best Dropshipping Products 2026:</strong><br><br>If you\'ve been scrolling through product research tools looking for that one winning item that changes everything — you\'re not alone. In 2026, the dropshipping landscape has never moved faster, and the difference between a 6-figure store and a failed experiment often comes down to one thing: timing.<br><br>We analyzed over 47,000 Shopify and WooCommerce stores to bring you the 10 products generating the most revenue right now...',
+  'ad copy':'<strong>Facebook Ad Copy — Posture Corrector:</strong><br><br><em>Hook:</em> "Back pain ruined my mornings for 3 years. This $34 device fixed it in a week."\n<br><br><em>Body:</em> 8 out of 10 adults suffer from back pain — most just accept it as normal. Our PostureFix Pro was designed with physical therapists to gently retrain your posture in just 20 minutes a day.\n<br><br><em>CTA:</em> Try it risk-free for 30 days →\n<br><br>Best format: 15-sec video with before/after + testimonial overlay.',
+  'default':'I can write product titles, descriptions, meta tags, blog posts, category descriptions, and ad copy. What would you like me to create? Just tell me the product name or topic and I\'ll generate multiple options for you.'
+};
+
+function writerSend(msg){
+  useCredit(1,'AI Write');
+  const inp=document.getElementById('writerInput');
+  const text=msg||inp.value.trim();
+  if(!text)return;
+  inp.value='';
+  appendAI(text,true,'writerMsgs');
+  const ti=appendTyping('writerMsgs');
+  const key=Object.keys(writerR).find(k=>text.toLowerCase().includes(k));
+  const reply=writerR[key]||writerR.default;
+  setTimeout(()=>{ti.remove();appendAI(reply,false,'writerMsgs');},800+Math.random()*600);
+}
+
+function appendAI(text,isUser,containerId){
+  const msgs=document.getElementById(containerId);
+  const div=document.createElement('div');
+  div.className='ai-msg'+(isUser?' user':'');
+  div.innerHTML=`<div class="ai-av ${isUser?'ai-av-user':'ai-av-bot'}">${isUser?'JD':'AI'}</div><div class="ai-bub ${isUser?'ai-bub-user':'ai-bub-bot'}">${text}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+function appendTyping(containerId){
+  const msgs=document.getElementById(containerId);
+  const div=document.createElement('div');
+  div.className='ai-msg';
+  div.innerHTML='<div class="ai-av ai-av-bot">AI</div><div class="ai-typing"><span></span><span></span><span></span></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+// Init
+buildDashChart();
+</script>
+</body>
+</html>

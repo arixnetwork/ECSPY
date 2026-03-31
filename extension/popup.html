@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECSPY Extension</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#1a1d23;
+  --bg2:#22252d;
+  --bg3:#2a2d37;
+  --bg4:#32363f;
+  --border:#3a3e4a;
+  --border2:#484d5a;
+  --text:#e8eaf0;
+  --text2:#a0a6b8;
+  --text3:#6b7080;
+  --orange:#e8740c;
+  --orange2:#f58a20;
+  --orange-bg:rgba(232,116,12,0.12);
+  --orange-border:rgba(232,116,12,0.25);
+  --blue:#4a9eff;
+  --blue2:#3b8be0;
+  --red:#e85555;
+  --green:#4caf82;
+  --purple:#9b7fe8;
+  --sidebar:60px;
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:#111317;color:var(--text);font-size:13px;line-height:1.5;height:100vh;display:flex;align-items:center;justify-content:center}
+
+.ext-shell{width:500px;height:100vh;max-height:900px;background:var(--bg);display:flex;border-radius:0;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,.8);position:relative}
+
+/* Sidebar */
+.sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding:0;overflow:hidden}
+.sidebar-logo{width:100%;height:58px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border);flex-shrink:0}
+.logo-box{width:36px;height:36px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;position:relative}
+.logo-box svg{width:20px;height:20px;fill:#fff}
+.sidebar-nav{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px;overflow-y:auto;width:100%}
+.nav-btn{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;background:none;border:none;color:var(--text3);position:relative}
+.nav-btn:hover{background:var(--bg3);color:var(--text2)}
+.nav-btn.active{background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border)}
+.nav-btn svg{width:18px;height:18px}
+.sidebar-bottom{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-top:1px solid var(--border)}
+.sidebar-bottom .nav-btn{color:var(--text3)}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:58px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:12px;flex-shrink:0}
+.page-title{font-size:16px;font-weight:600;color:var(--orange);letter-spacing:-0.2px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.close-btn{width:30px;height:30px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2)}
+.close-btn:hover{background:var(--bg4);color:var(--text)}
+.close-btn svg{width:14px;height:14px}
+.url-pill{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text2)}
+
+/* Content */
+.content{flex:1;overflow-y:auto;padding:14px}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* Page sections */
+.page{display:none}
+.page.active{display:block}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.card-inner{padding:14px 16px}
+.card-row{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.card-row:last-child{border-bottom:none}
+.card-row-icon{width:34px;height:34px;border-radius:8px;background:var(--orange-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-row-icon svg{width:16px;height:16px;fill:var(--orange);color:var(--orange)}
+.card-row-body{flex:1}
+.card-row-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:1px}
+.card-row-sub{font-size:11px;color:var(--text3)}
+.card-row-action{font-size:12px;font-weight:600;color:var(--orange);cursor:pointer}
+.card-row-action:hover{color:var(--orange2)}
+
+/* Stats grid 2x2 */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .15s;position:relative}
+.stat-card:hover{border-color:var(--border2)}
+.stat-card-label{font-size:11px;color:var(--text3);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.stat-card-label svg{width:14px;height:14px;fill:var(--orange)}
+.stat-card-value{font-size:22px;font-weight:700;color:var(--orange);letter-spacing:-0.5px;line-height:1}
+.stat-card-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.stat-card-arrow{position:absolute;top:14px;right:14px;color:var(--text3)}
+.stat-card-arrow svg{width:14px;height:14px}
+
+/* Section header inside card */
+.sec-header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.sec-header-icon{width:20px;height:20px;fill:var(--orange);color:var(--orange)}
+.sec-header-title{font-size:13px;font-weight:600;color:var(--text)}
+
+/* Traffic source donut */
+.traffic-section{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
+.traffic-inner{padding:14px 16px;display:flex;align-items:center;gap:16px}
+.donut-wrap{flex-shrink:0}
+.legend{flex:1;display:flex;flex-direction:column;gap:5px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* Keywords list */
+.kw-list{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.kw-sec-header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.kw-item{padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.kw-item:last-child{border-bottom:none}
+.kw-item:hover{background:var(--bg3)}
+.kw-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px}
+.kw-meta{display:flex;gap:16px;font-size:11px;color:var(--text3)}
+.kw-meta span span{font-weight:600}
+.kw-traffic{color:var(--orange);font-weight:600}
+.kw-volume{color:var(--text2);font-weight:600}
+.kw-cpc{color:var(--green);font-weight:600}
+
+/* Trends stats */
+.trends-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.trend-stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.trend-stat-label{font-size:11px;color:var(--text3);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.trend-stat-label svg{width:14px;height:14px}
+.trend-stat-value{font-size:22px;font-weight:700;color:var(--orange);letter-spacing:-0.5px;line-height:1}
+.trend-stat-sub{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* Chart */
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
+.chart-inner{padding:14px 16px}
+.chart-area{position:relative;height:160px;margin-top:10px}
+canvas{width:100%!important}
+
+/* Ranking */
+.rank-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
+.rank-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.rank-item:last-child{border-bottom:none}
+.rank-icon{width:34px;height:34px;border-radius:8px;background:var(--orange-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rank-icon svg{width:16px;height:16px;color:var(--orange)}
+.rank-label{font-size:12px;color:var(--text3);margin-bottom:2px}
+.rank-value{font-size:20px;font-weight:700;color:var(--orange);letter-spacing:-0.5px;line-height:1}
+.rank-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* Pie chart card */
+.pie-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px}
+.pie-inner{padding:14px 16px;display:flex;align-items:center;gap:16px}
+
+/* TDK */
+.tdk-table{width:100%;font-size:12.5px}
+.tdk-table tr td:first-child{color:var(--text3);padding:6px 0;vertical-align:top;white-space:nowrap;padding-right:16px;min-width:90px}
+.tdk-table tr td:last-child{color:var(--text);font-weight:500;padding:6px 0}
+
+/* Keyword score rows */
+.score-item{padding:12px 16px;border-bottom:1px solid var(--border)}
+.score-item:last-child{border-bottom:none}
+.score-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px}
+.score-meta{display:flex;gap:20px;font-size:12px;color:var(--text3)}
+.score-val{color:var(--orange);font-weight:600}
+.score-density{color:var(--orange);font-weight:600}
+.score-hint{font-size:11px;color:var(--text3);padding:0 16px 10px;font-style:italic}
+
+/* Whois table */
+.whois-table{width:100%;font-size:12.5px;border-collapse:collapse}
+.whois-table tr td{padding:7px 0;vertical-align:top;border-bottom:1px solid var(--border)}
+.whois-table tr:last-child td{border-bottom:none}
+.whois-table td:first-child{color:var(--text3);white-space:nowrap;padding-right:16px;min-width:110px}
+.whois-table td:last-child{color:var(--text);font-weight:500;word-break:break-word}
+.raw-whois{background:var(--bg3);border-radius:8px;padding:12px;font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--text2);line-height:1.8;word-break:break-all;max-height:300px;overflow-y:auto}
+.raw-whois::-webkit-scrollbar{width:3px}
+.raw-whois::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.raw-link{color:var(--blue);text-decoration:none}
+
+/* Settings */
+.toggle{width:40px;height:22px;background:var(--orange);border-radius:20px;position:relative;cursor:pointer;flex-shrink:0}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:3px;right:3px;transition:right .2s}
+.toggle.off{background:var(--bg4)}
+.toggle.off::after{right:auto;left:3px}
+.lang-select{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text2);font-size:12px;font-family:'IBM Plex Sans',monospace;outline:none;cursor:pointer}
+.lang-select option{background:var(--bg3)}
+
+/* Tooltip */
+.tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--bg4);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-size:11px;color:var(--text2);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10}
+.nav-btn:hover .tip{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="ext-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-box">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h13"/><rect x="14" y="10" width="7" height="10" rx="1.5"/></svg>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-btn active" onclick="showPage('overview',this)" title="Overview">
+        <div class="tip">Overview</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      </div>
+      <div class="nav-btn" onclick="showPage('trends',this)" title="Trends">
+        <div class="tip">Trends</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+      <div class="nav-btn" onclick="showPage('ranking',this)" title="Ranking">
+        <div class="tip">Ranking</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <div class="nav-btn" onclick="showPage('tdk',this)" title="TDK">
+        <div class="tip">TDK</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+      </div>
+      <div class="nav-btn" onclick="showPage('whois',this)" title="Whois">
+        <div class="tip">Whois</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+      </div>
+      <div class="nav-btn" onclick="showPage('screenshot',this)" title="Screenshot">
+        <div class="tip">Screenshot</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="nav-btn" onclick="showPage('settings',this)" title="Settings">
+        <div class="tip">Settings</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 115.64 19.07"/><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83"/></svg>
+      </div>
+      <div class="nav-btn" title="Twitter/X">
+        <div class="tip">Twitter/X</div>
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.726-8.84L1.254 2.25H8.08l4.258 5.63 5.906-5.63Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </div>
+      <div class="nav-btn" title="Buy Coffee">
+        <div class="tip">Buy Coffee</div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main panel -->
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="pageTitle">Overview</div>
+      <div class="topbar-right">
+        <div class="url-pill" id="currentUrl">claude.ai</div>
+        <div class="close-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="content" id="contentArea">
+
+      <!-- OVERVIEW -->
+      <div class="page active" id="page-overview">
+        <div class="stats-grid">
+          <div class="stat-card" onclick="showPage('trends',document.querySelector('[title=Trends]'))">
+            <div class="stat-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            <div class="stat-card-label">
+              <svg viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6"/></svg>
+              Monthly Visitors
+            </div>
+            <div class="stat-card-value">290.33M</div>
+            <div class="stat-card-sub">2026/02</div>
+          </div>
+          <div class="stat-card" onclick="showPage('ranking',document.querySelector('[title=Ranking]'))">
+            <div class="stat-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            <div class="stat-card-label">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Global Rank
+            </div>
+            <div class="stat-card-value">125</div>
+            <div class="stat-card-sub">Global Ranking</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 115.64 19.07"/></svg>
+              Store
+            </div>
+            <div class="stat-card-value" style="font-size:16px;color:var(--text2);margin-top:4px">—</div>
+            <div class="stat-card-sub">Store Name</div>
+          </div>
+          <div class="stat-card" onclick="showPage('tdk',document.querySelector('[title=TDK]'))">
+            <div class="stat-card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+            <div class="stat-card-label">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              Page
+            </div>
+            <div class="stat-card-value" style="font-size:13px;color:var(--orange);margin-top:4px;line-height:1.3;font-weight:600">Web SaaS Shopify WordPress spy...</div>
+            <div class="stat-card-sub">Page Title</div>
+          </div>
+        </div>
+
+        <!-- Traffic Source -->
+        <div class="traffic-section">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span class="sec-header-title">Traffic Source</span>
+            <div style="margin-left:auto;color:var(--text3)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+          </div>
+          <div class="traffic-inner">
+            <div class="donut-wrap">
+              <canvas id="trafficDonut" width="130" height="130"></canvas>
+            </div>
+            <div class="legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#e8740c"></div>Direct: 74.42%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4a9eff"></div>Search: 22.36%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#e85555"></div>Referrals: 2.48%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf82"></div>Social: 0.47%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#9b7fe8"></div>Paid Referrals: 0.23%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf82"></div>Mail: 0.03%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Search Keywords -->
+        <div class="kw-list">
+          <div class="kw-sec-header">
+            <svg style="width:16px;height:16px;fill:none;stroke:var(--orange);stroke-width:2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span style="font-size:13px;font-weight:600;color:var(--text);margin-left:4px">Top Search Keywords</span>
+          </div>
+          <div class="kw-item">
+            <div class="kw-name">claude</div>
+            <div class="kw-meta">
+              <span>Traffic <span class="kw-traffic">17M</span></span>
+              <span>Volume <span class="kw-volume">18M</span></span>
+              <span>CPC <span class="kw-cpc">$0.46</span></span>
+            </div>
+          </div>
+          <div class="kw-item">
+            <div class="kw-name">claude ai</div>
+            <div class="kw-meta">
+              <span>Traffic <span class="kw-traffic">9M</span></span>
+              <span>Volume <span class="kw-volume">9M</span></span>
+              <span>CPC <span class="kw-cpc">$0.57</span></span>
+            </div>
+          </div>
+          <div class="kw-item">
+            <div class="kw-name">claude code</div>
+            <div class="kw-meta">
+              <span>Traffic <span class="kw-traffic">1M</span></span>
+              <span>Volume <span class="kw-volume">5M</span></span>
+              <span>CPC <span class="kw-cpc">$2.28</span></span>
+            </div>
+          </div>
+          <div class="kw-item">
+            <div class="kw-name">claude ai free</div>
+            <div class="kw-meta">
+              <span>Traffic <span class="kw-traffic">870K</span></span>
+              <span>Volume <span class="kw-volume">3.2M</span></span>
+              <span>CPC <span class="kw-cpc">$0.89</span></span>
+            </div>
+          </div>
+          <div class="kw-item">
+            <div class="kw-name">anthropic claude</div>
+            <div class="kw-meta">
+              <span>Traffic <span class="kw-traffic">620K</span></span>
+              <span>Volume <span class="kw-volume">2.8M</span></span>
+              <span>CPC <span class="kw-cpc">$1.12</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRENDS -->
+      <div class="page" id="page-trends">
+        <div class="trends-grid">
+          <div class="trend-stat">
+            <div class="trend-stat-label">
+              <svg style="fill:none;stroke:var(--orange);stroke-width:2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Visit Duration
+            </div>
+            <div class="trend-stat-value">05:38</div>
+            <div class="trend-stat-sub">Seconds/Visit</div>
+          </div>
+          <div class="trend-stat">
+            <div class="trend-stat-label">
+              <svg style="fill:none;stroke:var(--orange);stroke-width:2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+              Monthly Visitors
+            </div>
+            <div class="trend-stat-value">290.33M</div>
+            <div class="trend-stat-sub">2026/02</div>
+          </div>
+          <div class="trend-stat">
+            <div class="trend-stat-label">
+              <svg style="fill:none;stroke:var(--orange);stroke-width:2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Pages Per Visit
+            </div>
+            <div class="trend-stat-value">4.06</div>
+            <div class="trend-stat-sub">Pages/Visit</div>
+          </div>
+          <div class="trend-stat">
+            <div class="trend-stat-label">
+              <svg style="fill:none;stroke:var(--orange);stroke-width:2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              Bounce Rate
+            </div>
+            <div class="trend-stat-value">26.92%</div>
+            <div class="trend-stat-sub">Page Bounce Rate</div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span class="sec-header-title">Visits Over Time</span>
+          </div>
+          <div class="chart-inner">
+            <div class="chart-area">
+              <canvas id="trendsChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span class="sec-header-title">Monthly Traffic Breakdown</span>
+          </div>
+          <div style="padding:14px 16px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:7px">
+                <span style="font-size:12px;color:var(--text2)">2025/12</span>
+                <span style="font-size:13px;font-weight:700;color:var(--orange)">158.2M</span>
+                <div style="width:80px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="height:100%;width:53%;background:var(--orange);border-radius:3px"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:7px">
+                <span style="font-size:12px;color:var(--text2)">2026/01</span>
+                <span style="font-size:13px;font-weight:700;color:var(--orange)">224.7M</span>
+                <div style="width:80px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="height:100%;width:75%;background:var(--orange);border-radius:3px"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:7px">
+                <span style="font-size:12px;color:var(--text2)">2026/02</span>
+                <span style="font-size:13px;font-weight:700;color:var(--orange)">290.3M</span>
+                <div style="width:80px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="height:100%;width:100%;background:var(--orange);border-radius:3px"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RANKING -->
+      <div class="page" id="page-ranking">
+        <div class="rank-card">
+          <div class="rank-item">
+            <div class="rank-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+            </div>
+            <div>
+              <div class="rank-label">Global Rank</div>
+              <div class="rank-value">125</div>
+              <div class="rank-sub">Global Ranking</div>
+            </div>
+          </div>
+          <div class="rank-item">
+            <div class="rank-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            </div>
+            <div>
+              <div class="rank-label">Country Rank</div>
+              <div class="rank-value">119</div>
+              <div class="rank-sub">United States</div>
+            </div>
+          </div>
+          <div class="rank-item">
+            <div class="rank-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            </div>
+            <div>
+              <div class="rank-label">Category Rank</div>
+              <div class="rank-value">4</div>
+              <div class="rank-sub">AI Chatbots and Tools</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pie-card">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span class="sec-header-title">Top Regions</span>
+          </div>
+          <div class="pie-inner">
+            <canvas id="regionPie" width="140" height="140"></canvas>
+            <div class="legend">
+              <div class="legend-item"><div class="legend-dot" style="background:#e8740c"></div>United States: 32.41%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4a9eff"></div>India: 7.02%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#e85555"></div>United Kingdom: 4.65%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#4caf82"></div>France: 3.65%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#9b7fe8"></div>South Korea: 3.43%</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#888"></div>Others: 48.84%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            <span class="sec-header-title">Ranking History</span>
+          </div>
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;font-size:12px">
+              <span style="color:var(--text3)">Jan 2026</span>
+              <span style="color:var(--orange);font-weight:600">#198 Global</span>
+              <span style="color:var(--success);font-size:11px">▼ improving</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px">
+              <span style="color:var(--text3)">Feb 2026</span>
+              <span style="color:var(--orange);font-weight:600">#151 Global</span>
+              <span style="color:var(--green);font-size:11px">▼ improving</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px">
+              <span style="color:var(--text3)">Mar 2026</span>
+              <span style="color:var(--orange);font-weight:600">#125 Global</span>
+              <span style="color:var(--green);font-size:11px">▼ improving</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TDK -->
+      <div class="page" id="page-tdk">
+        <div class="card" style="margin-bottom:10px">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <span class="sec-header-title">Basic</span>
+          </div>
+          <div style="padding:14px 16px">
+            <table class="tdk-table">
+              <tr><td>Title:</td><td>Web SaaS Shopify WordPress spy and dropship chrome extension - Claude</td></tr>
+              <tr><td>Description:</td><td>Claude is Anthropic's AI, built for problem solvers. Tackle complex challenges, analyze data, write code, and think through your hardest work.</td></tr>
+              <tr><td>Keywords:</td><td style="color:var(--text3)">—</td></tr>
+              <tr><td>Language:</td><td>American English</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="kw-list">
+          <div class="kw-sec-header">
+            <svg style="width:16px;height:16px;fill:none;stroke:var(--orange);stroke-width:2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span style="font-size:13px;font-weight:600;color:var(--text);margin-left:4px">Content Keywords</span>
+          </div>
+          <div style="padding:8px 16px 4px;font-size:11px;color:var(--text3);border-bottom:1px solid var(--border)">The most relevant keywords extracted from the website content. Higher scores indicate greater importance to the page</div>
+          <div class="score-item">
+            <div class="score-name">extension</div>
+            <div class="score-meta"><span>Score <span class="score-val">100.00</span></span><span>Density <span class="score-density">2.27%</span></span></div>
+          </div>
+          <div class="score-item">
+            <div class="score-name">chrome</div>
+            <div class="score-meta"><span>Score <span class="score-val">81.14</span></span><span>Density <span class="score-density">1.59%</span></span></div>
+          </div>
+          <div class="score-item">
+            <div class="score-name">spy</div>
+            <div class="score-meta"><span>Score <span class="score-val">79.52</span></span><span>Density <span class="score-density">1.59%</span></span></div>
+          </div>
+          <div class="score-item">
+            <div class="score-name">saas</div>
+            <div class="score-meta"><span>Score <span class="score-val">63.63</span></span><span>Density <span class="score-density">1.36%</span></span></div>
+          </div>
+          <div class="score-item">
+            <div class="score-name">dropship</div>
+            <div class="score-meta"><span>Score <span class="score-val">58.91</span></span><span>Density <span class="score-density">1.14%</span></span></div>
+          </div>
+          <div class="score-item">
+            <div class="score-name">shopify</div>
+            <div class="score-meta"><span>Score <span class="score-val">54.22</span></span><span>Density <span class="score-density">1.14%</span></span></div>
+          </div>
+          <div class="score-item">
+            <div class="score-name">wordpress</div>
+            <div class="score-meta"><span>Score <span class="score-val">47.38</span></span><span>Density <span class="score-density">0.91%</span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WHOIS -->
+      <div class="page" id="page-whois">
+        <div class="card" style="margin-bottom:10px">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+            <span class="sec-header-title">Whois</span>
+          </div>
+          <div style="padding:14px 16px">
+            <table class="whois-table">
+              <tr><td>Domain:</td><td>claude.ai</td></tr>
+              <tr><td>Registrar:</td><td>MarkMonitor Inc.</td></tr>
+              <tr><td>Created Date:</td><td>04/08/2018, 16:48:43</td></tr>
+              <tr><td>Expires Date:</td><td>04/08/2029, 16:48:44</td></tr>
+              <tr><td>Updated Date:</td><td>17/01/2025, 19:25:43</td></tr>
+              <tr><td>Domain Status:</td><td>clientDeleteProhibited<br>clientTransferProhibited<br>clientUpdateProhibited</td></tr>
+              <tr><td>Name Servers:</td><td>isla.ns.cloudflare.com, randy.ns.cloudflare.com</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span class="sec-header-title">Raw Whois Data</span>
+          </div>
+          <div style="padding:14px 16px">
+            <div class="raw-whois">Domain Status: clientDeleteProhibited <a href="#" class="raw-link">https://icann.org/epp#clientDeleteProhibited</a>
+Domain Status: clientTransferProhibited <a href="#" class="raw-link">https://icann.org/epp#clientTransferProhibited</a>
+Domain Status: clientUpdateProhibited <a href="#" class="raw-link">https://icann.org/epp#clientUpdateProhibited</a>
+Name Server: isla.ns.cloudflare.com
+Name Server: randy.ns.cloudflare.com
+Domain Name: claude.ai
+Registry Domain ID: be3cad9a48374aa88e0259e019d4270d-DONUTS
+Registrar WHOIS Server: whois.markmonitor.com
+Registrar URL: http://www.markmonitor.com
+Updated Date: 2025-01-17T19:25:43Z
+Created Date: 2018-08-04T15:48:43Z
+Expiry Date: 2029-08-04T15:48:44Z
+Registrar: MarkMonitor Inc.
+Registrar IANA ID: 292
+Registrar Abuse Contact Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="76171403051315191b061a171f180205361b17041d1b19181f0219045815191b">[email&#160;protected]</a>
+Registrar Abuse Contact Phone: +1.2086851750
+Domain Status: clientDeleteProhibited
+Domain Status: clientTransferProhibited
+Domain Status: clientUpdateProhibited
+Registry Registrant ID: REDACTED FOR PRIVACY
+Registrant Name: REDACTED FOR PRIVACY
+Registrant Organization: Anthropic, PBC</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREENSHOT -->
+      <div class="page" id="page-screenshot">
+        <div class="card" style="margin-bottom:10px">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span class="sec-header-title">Page Screenshot</span>
+          </div>
+          <div style="padding:14px 16px;text-align:center">
+            <div style="background:var(--bg3);border:1px dashed var(--border2);border-radius:8px;padding:40px 20px;color:var(--text3);font-size:13px">
+              <svg style="width:32px;height:32px;margin:0 auto 10px;display:block;stroke:var(--text3)" viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              Screenshot of current page will appear here.<br>
+              <button onclick="this.textContent='Capturing...';setTimeout(()=>this.textContent='Capture Screenshot',1500)" style="margin-top:12px;background:var(--orange);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:12px;font-family:inherit;font-weight:600;cursor:pointer">Capture Screenshot</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <span class="sec-header-title">Recent Captures</span>
+          </div>
+          <div style="padding:14px 16px;color:var(--text3);font-size:12px;text-align:center">No screenshots captured yet.</div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="card">
+          <div class="card-row">
+            <div class="card-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--orange)"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div class="card-row-body">
+              <div class="card-row-title">Language</div>
+              <div class="card-row-sub">Change Interface Language</div>
+            </div>
+            <select class="lang-select">
+              <option>English</option>
+              <option>Español</option>
+              <option>Français</option>
+              <option>Deutsch</option>
+              <option>中文</option>
+              <option>日本語</option>
+              <option>한국어</option>
+              <option>Português</option>
+              <option>Türkçe</option>
+              <option>العربية</option>
+            </select>
+          </div>
+          <div class="card-row">
+            <div class="card-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--orange)"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </div>
+            <div class="card-row-body">
+              <div class="card-row-title">Privacy Settings</div>
+              <div class="card-row-sub">Manage Your Privacy and Security Options</div>
+            </div>
+            <span class="card-row-action">Manage</span>
+          </div>
+          <div class="card-row">
+            <div class="card-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--orange)"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
+            </div>
+            <div class="card-row-body">
+              <div class="card-row-title">Help and Support</div>
+              <div class="card-row-sub">Get Help or Contact Support Team</div>
+            </div>
+            <span class="card-row-action">View</span>
+          </div>
+          <div class="card-row">
+            <div class="card-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--orange)"><path d="M15.05 5A5 5 0 0119 8.95M15.05 1A9 9 0 0123 8.94M13 17H1v-2a6 6 0 0112 0v2zM9 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+            </div>
+            <div class="card-row-body">
+              <div class="card-row-title">Launcher</div>
+              <div class="card-row-sub">Display the launcher in the bottom-right corner of web pages</div>
+            </div>
+            <div class="toggle" id="launcherToggle" onclick="this.classList.toggle('off')"></div>
+          </div>
+          <div class="card-row">
+            <div class="card-row-icon" style="background:rgba(232,85,85,0.12)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#e85555" stroke-width="2" style="width:16px;height:16px"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="card-row-body">
+              <div class="card-row-title">Logout</div>
+              <div class="card-row-sub">Sign out of your account</div>
+            </div>
+            <span class="card-row-action" style="color:#e85555">Logout</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sec-header">
+            <svg class="sec-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            <span class="sec-header-title">Extension Version</span>
+          </div>
+          <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px;color:var(--text3)">ECSPY v2.4.1</span>
+            <span style="font-size:11px;color:var(--green);font-weight:600">● Up to date</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const titles={overview:'Overview',trends:'Trends',ranking:'Ranking',tdk:'TDK',whois:'Whois',screenshot:'Screenshot',settings:'Settings'};
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const p=document.getElementById('page-'+id);
+  if(p)p.classList.add('active');
+  if(btn)btn.classList.add('active');
+  document.getElementById('pageTitle').textContent=titles[id]||id;
+  if(id==='trends'&&!window.trendsBuilt){buildTrendsChart();window.trendsBuilt=true;}
+  if(id==='ranking'&&!window.regionBuilt){buildRegionPie();window.regionBuilt=true;}
+}
+
+// Draw donut chart for traffic
+window.addEventListener('load',()=>{
+  const ctx=document.getElementById('trafficDonut').getContext('2d');
+  new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Direct','Search','Referrals','Social','Paid Referrals','Mail'],
+      datasets:[{data:[74.42,22.36,2.48,0.47,0.23,0.03],backgroundColor:['#e8740c','#4a9eff','#e85555','#4caf82','#9b7fe8','#4caf82'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{
+      responsive:false,cutout:'68%',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>` ${i.label}: ${i.parsed}%`}}},
+      animation:{duration:600}
+    }
+  });
+});
+
+function buildTrendsChart(){
+  const ctx=document.getElementById('trendsChart').getContext('2d');
+  new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:['2025/12','','','2026/01','','','2026/02'],
+      datasets:[{
+        data:[158,168,182,198,224,258,290],
+        fill:true,
+        backgroundColor:'rgba(232,116,12,0.18)',
+        borderColor:'#e8740c',
+        borderWidth:2,
+        pointRadius:0,
+        tension:0.4
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:i=>`${i.parsed.y}M visitors`}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6b7080',font:{size:10}}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6b7080',font:{size:10},callback:v=>v+'M'},min:0,max:300}
+      },
+      animation:{duration:600}
+    }
+  });
+}
+
+function buildRegionPie(){
+  const ctx=document.getElementById('regionPie').getContext('2d');
+  new Chart(ctx,{
+    type:'pie',
+    data:{
+      labels:['United States','India','United Kingdom','France','South Korea','Others'],
+      datasets:[{data:[32.41,7.02,4.65,3.65,3.43,48.84],backgroundColor:['#e8740c','#4a9eff','#e85555','#4caf82','#9b7fe8','#555a6a'],bor
